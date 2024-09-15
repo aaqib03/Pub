@@ -1,16 +1,15 @@
 import boto3
 import json
+import os
 
 # Initialize clients for EC2 and SNS
 ec2 = boto3.client('ec2')
 sns = boto3.client('sns')
 
-# SNS topic ARN (replace this with your actual SNS topic ARN)
-SNS_TOPIC_ARN = 'arn:aws:sns:YOUR_REGION:YOUR_ACCOUNT_ID:EC2_EBS_HealthCheck'
-
-# The tag name you're filtering by (e.g., 'Name' with values like 'scheme1', 'scheme2', etc.)
-TAG_KEY = 'Name'
-TAG_VALUES = ['scheme1', 'scheme2']  # Add more values if needed
+# Fetch environment variables
+SNS_TOPIC_ARN = os.environ['SNS_TOPIC_ARN']
+TAG_KEY = os.environ['TAG_KEY']
+TAG_VALUES = os.environ['TAG_VALUES'].split(',')  # Split comma-separated values into a list
 
 def lambda_handler(event, context):
     # Get all instances with the specific tags
