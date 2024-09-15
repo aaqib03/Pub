@@ -1,8 +1,8 @@
 provider "aws" {
-  region = "us-east-1"  # Change to your desired region
+  region = "us-east-1"  # Set your region
 }
 
-# Create SNS topic for notifications
+# Create SNS topic for sending alarm notifications
 resource "aws_sns_topic" "alarm_notifications" {
   name = "ec2_ebs_health_alarms"
 }
@@ -10,71 +10,61 @@ resource "aws_sns_topic" "alarm_notifications" {
 # Create an SNS subscription for notifications (email or SMS)
 resource "aws_sns_topic_subscription" "email_subscription" {
   topic_arn = aws_sns_topic.alarm_notifications.arn
-  protocol  = "email"  # Or "sms"
+  protocol  = "email"
   endpoint  = "your_email@example.com"  # Replace with your email
 }
 
-# Variable for tag key and value to filter resources
-variable "tag_key" {
-  description = "Tag key to identify resources to be monitored"
-  default     = "MonitoringGroup"
-}
-
-variable "tag_value" {
-  description = "Tag value for the above key"
-  default     = "Production"
-}
-
-# Data source to get EC2 instances by tag
-data "aws_instance" "tagged_instances" {
-  filter {
-    name   = "tag:${var.tag_key}"
-    values = [var.tag_value]
-  }
-}
-
-# Data source to get EBS volumes by tag
-data "aws_ebs_volume" "tagged_volumes" {
-  filter {
-    name   = "tag:${var.tag_key}"
-    values = [var.tag_value]
-  }
-}
-
-# CloudWatch Alarm for EC2 Instance Status Check Failure (Instance-level)
+# CloudWatch Alarm for Instance Status Check Failure (Instance-level)
 resource "aws_cloudwatch_metric_alarm" "instance_status_check_failed" {
-  count                     = length(data.aws_instance.tagged_instances.ids)
-  alarm_name                = "EC2_Instance_Status_Check_Failed_${count.index}"
+  alarm_name                = "EC2_Instance_Status_Check_Failed"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = 1
   metric_name               = "StatusCheckFailed_Instance"
   namespace                 = "AWS/EC2"
-  period                    = 300
+  period                    = 60
   statistic                 = "Average"
   threshold                 = 1
   alarm_description         = "Triggers if the EC2 instance fails the instance status check."
   dimensions = {
-    InstanceId = element(data.aws_instance.tagged_instances.ids, count.index)
+    InstanceId = "i-xxxxxxxxxx"  # Replace with your instance ID
   }
   alarm_actions             = [aws_sns_topic.alarm_notifications.arn]
   ok_actions                = [aws_sns_topic.alarm_notifications.arn]
   insufficient_data_actions = [aws_sns_topic.alarm_notifications.arn]
 }
 
-# CloudWatch Alarm for EBS Volume Status Check Failure (one per volume)
-resource "aws_cloudwatch_metric_alarm" "ebs_volume_status_check_failed" {
-  count                     = length(data.aws_ebs_volume.tagged_volumes.ids)
-  alarm_name                = "EBS_Volume_Status_Check_Failed_${count.index}"
+# CloudWatch Alarm for System Status Check Failure (System-level)
+resource "aws_cloudwatch_metric_alarm" "system_status_check_failed" {
+  alarm_name                = "EC2_System_Status_Check_Failed"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
   evaluation_periods        = 1
-  metric_name               = "VolumeStatusCheckFailed"
-  namespace                 = "AWS/EBS"
-  period                    = 300
+  metric_name               = "StatusCheckFailed_System"
+  namespace                 = "AWS/EC2"
+  period                    = 60
   statistic                 = "Average"
   threshold                 = 1
-  alarm_description         = "Triggers if the EBS volume status check fails."
+  alarm_description         = "Triggers if the EC2 instance fails the system status check."
   dimensions = {
-    VolumeId = element(data.aws_ebs_volume.tagged_volumes.ids, count.index)
+    InstanceId = "i-xxxxxxxxxx"  # Replace with your instance ID
+  }
+  alarm_actions             = [aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [aws_sns_topic.alarm_notifications.arn]
+  insufficient_data_actions = [aws_sns_topic.alarm_notifications.arn]
+}
+
+# CloudWatch Alarm for Attached EBS Status Check Failure
+resource "aws_cloudwatch_metric_alarm" "attached_ebs_status_check_failed" {
+  alarm_name                = "EBS_Attached_Status_Check_Failed"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  evaluation_periods        = 1
+  metric_name               = "StatusCheckFailed_AttachedEBS"
+  namespace                 = "AWS/EC2"
+  period                    = 60
+  statistic                 = "Average"
+  threshold                 = 1
+  alarm_description         = "Triggers if the attached EBS volume fails the status check."
+  dimensions = {
+    InstanceId = "i-xxxxxxxxxx"  # Replace with your instance ID
   }
   alarm_actions             = [aws_sns_topic.alarm_notifications.arn]
   ok_actions                = [aws_sns_topic.alarm_notifications.arn]
