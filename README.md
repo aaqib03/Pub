@@ -28,4 +28,33 @@ This alert triggers when the **system-level health check** fails, indicating pot
        - In the **EC2 Console**, select the instance.
        - Go to **Actions** → **Instance State** → **Stop**.
        - Wait until the instance is completely stopped.
-       - Then, go to **Actions** → **Instance State** → **Start** to start⬤
+       - Then, go to **Actions** → **Instance State** → **Start** to start the instance on a different host.
+   - After starting the instance, recheck the **system status** to verify if the issue is resolved.
+
+5. **Check Network Connectivity**:
+   - If network reachability is the issue, verify that the **subnet route tables**, **NACLs**, and **security groups** are configured correctly.
+   - Ensure that **internet gateway** and **NAT gateway** configurations are correct for external traffic.
+
+6. **Attempt to Restore Instance from Backup (Snapshot or AMI)**:
+   - If the instance continues to fail after migration and network troubleshooting, it might indicate severe corruption or issues beyond hardware failure.
+   - In this case, **restoring from an EBS snapshot** or **Amazon Machine Image (AMI)** might be necessary.
+     - **Steps**:
+       - **For EBS Snapshot**:
+         - Go to the **Elastic Block Store (EBS)** section of the AWS Console.
+         - Select the latest **snapshot** associated with the root volume of the instance.
+         - Create a new **EBS volume** from the snapshot and attach it to the instance.
+       - **For AMI Backup**:
+         - If you have a complete AMI backup, you can launch a new instance using the AMI to restore the instance's original state.
+
+---
+
+#### When to Recover from Snapshot:
+
+- You should consider **restoring from a snapshot** when:
+  - The instance fails repeatedly after hardware migration (i.e., stopping and starting).
+  - The root volume is corrupted or inaccessible.
+  - You’ve exhausted other troubleshooting options, including network and system checks.
+  
+- **Important Notes**:
+  - Restoring from a snapshot will replace the existing root volume with a previous state. This means that any data or changes made since the snapshot was taken will be lost unless additional backups are available.
+  - Ensure that a **latest snapshot** is available before proceeding with recovery.
