@@ -21,4 +21,22 @@ data "aws_instance" "filtered_instance_details" {
 # Output to display root volume IDs
 output "root_volume_ids" {
   value = flatten([for instance in data.aws_instance.filtered_instance_details : [for root_device in instance.root_block_device : root_device.volume_id]])
+
+
+}
+
+resource "aws_cloudwatch_metric_alarm" "attached_ebs_status_check" {
+  alarm_name          = "attached_ebs_status_check_${data.aws_instances.filtered_instances.ids[count.index]}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "EBSIOBalance%"
+  namespace           = "AWS/EC2"
+  period              = "300"
+  statistic           = "Maximum"
+  threshold           = "1"
+  alarm_description   = "Alarm for attached EBS volumes on instance ${data.aws_instances.filtered_instances.ids[count.index]}"
+  dimensions = {
+    InstanceId = data.aws_instances.filtered_instances.ids[count.index]
+  }
+  alarm_actions = [aws_sns_topic.example.arn]  # Replace with your SNS topic ARN
 }
