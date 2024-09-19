@@ -120,3 +120,5 @@ resource "aws_cloudwatch_metric_alarm" "attached_volume_status_check" {
 resource "aws_sns_topic" "your_sns_topic" {
   name = "ec2-volume-status-check-alarm"
 }
+
+
