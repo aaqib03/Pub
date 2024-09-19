@@ -1,34 +1,3 @@
-# Instance Monitoring
-
-Welcome to the **Instance Monitoring** project. This project is dedicated to setting up and maintaining the monitoring alerts for EC2 instances and their attached resources, such as EBS volumes. Any future monitoring alerts related to EC2 instances will be maintained and managed here.
-
-The following CloudWatch alarms have been configured in this project:
-
-- **Instance Status Check Failed**
-- **System Status Check Failed**
-- **Attached EBS Volume Status Check**
-- **Secondary EBS Volume Status Check**
-- **Root EBS Volume Status Check**
-
-## Table of Contents
-
-- [Alerts Overview](#alerts-overview)
-  - [Instance Status Check Failed](#instance-status-check-failed)
-  - [System Status Check Failed](#system-status-check-failed)
-  - [Attached EBS Volume Status Check](#attached-ebs-volume-status-check)
-  - [Secondary EBS Volume Status Check](#secondary-ebs-volume-status-check)
-  - [Root EBS Volume Status Check](#root-ebs-volume-status-check)
-- [Troubleshooting](#troubleshooting)
-  - [Instance Status Check Failed](#troubleshooting-instance-status-check-failed)
-  - [System Status Check Failed](#troubleshooting-system-status-check-failed)
-  - [Attached EBS Volume Status Check](#troubleshooting-attached-ebs-volume-status-check)
-  - [Secondary EBS Volume Status Check](#troubleshooting-secondary-ebs-volume-status-check)
-  - [Root EBS Volume Status Check](#troubleshooting-root-ebs-volume-status-check)
-- [Future Alerts](#future-alerts)
-- [Contributing](#contributing)
-
----
-
 ## Alerts Overview
 
 Below is the overview of the CloudWatch alarms configured for monitoring EC2 instances and EBS volumes:
@@ -43,38 +12,38 @@ Below is the overview of the CloudWatch alarms configured for monitoring EC2 ins
 
 ### 1. **Instance Status Check Failed**
 - **Metric**: `StatusCheckFailed_Instance`
-- **Purpose**: This alarm monitors the EC2 instance’s health at the **instance level**. It triggers if there’s a failure with the operating system or software issues that prevent the instance from responding.
-- **Threshold**: 1
-- **Evaluation Period**: 1
-- **Trigger Condition**: The alarm will trigger if the instance fails its health check even once.
+- **Purpose**: Monitors the EC2 instance’s **operating system health**. This alert will notify the operations team when the OS is unresponsive or facing critical errors.
+- **Trigger Condition**: The alarm triggers when the **instance-level health check** fails (returns `1`).
+- **Threshold**: 1 (Trigger on first failure).
+- [**Troubleshooting**](#troubleshooting-instance-status-check-failed)
 
 ### 2. **System Status Check Failed**
 - **Metric**: `StatusCheckFailed_System`
-- **Purpose**: This alarm monitors the EC2 instance’s **system-level health**. It triggers when AWS detects underlying hardware or networking issues that prevent the instance from working properly.
-- **Threshold**: 1
-- **Evaluation Period**: 1
-- **Trigger Condition**: The alarm will trigger if there’s an AWS infrastructure issue affecting the instance.
+- **Purpose**: Monitors the **AWS system-level health** of the instance. This alert captures issues with the underlying AWS infrastructure (hardware, network, etc.).
+- **Trigger Condition**: The alarm triggers when the **system-level health check** fails (returns `1`), indicating AWS infrastructure issues.
+- **Threshold**: 1 (Trigger on first failure).
+- [**Troubleshooting**](#troubleshooting-system-status-check-failed)
 
 ### 3. **Attached EBS Volume Status Check**
 - **Metric**: `StatusCheckFailed_AttachedEBS`
-- **Purpose**: This alarm monitors the health of **all attached EBS volumes**. If any attached EBS volume fails a status check, this alarm will trigger.
-- **Threshold**: 1
-- **Evaluation Period**: 1
-- **Trigger Condition**: The alarm will trigger if any EBS volume attached to the instance fails the status check.
+- **Purpose**: Monitors the health of **all EBS volumes attached** to the instance. The alert triggers when any attached volume fails its health check.
+- **Trigger Condition**: The alarm triggers if **any EBS volume attached** to the instance fails its health check (returns `1`).
+- **Threshold**: 1 (Trigger on first failure).
+- [**Troubleshooting**](#troubleshooting-attached-ebs-volume-status-check)
 
 ### 4. **Secondary EBS Volume Status Check**
 - **Metric**: `VolumeStatusCheckFailed`
-- **Purpose**: This alarm specifically monitors the **secondary EBS volume** attached to the EC2 instance. It will trigger if the secondary EBS volume fails its health check.
-- **Threshold**: 1
-- **Evaluation Period**: 1
-- **Trigger Condition**: The alarm will trigger if the secondary EBS volume fails a status check.
+- **Purpose**: Monitors the **secondary EBS volume** attached to the EC2 instance. This alert will notify when the secondary volume faces issues like corruption or connectivity failure.
+- **Trigger Condition**: The alarm triggers if the **secondary EBS volume** fails its health check (returns `1`).
+- **Threshold**: 1 (Trigger on first failure).
+- [**Troubleshooting**](#troubleshooting-secondary-ebs-volume-status-check)
 
 ### 5. **Root EBS Volume Status Check**
 - **Metric**: `VolumeStatusCheckFailed`
-- **Purpose**: This alarm monitors the **root EBS volume** attached to the EC2 instance. It will trigger if the root EBS volume fails its health check.
-- **Threshold**: 1
-- **Evaluation Period**: 1
-- **Trigger Condition**: The alarm will trigger if the root EBS volume fails a status check.
+- **Purpose**: Monitors the **root EBS volume** (the boot volume) attached to the EC2 instance. This alert notifies the team if the boot volume fails or experiences issues that may impact instance functionality.
+- **Trigger Condition**: The alarm triggers if the **root EBS volume** fails its health check (returns `1`).
+- **Threshold**: 1 (Trigger on first failure).
+- [**Troubleshooting**](#troubleshooting-root-ebs-volume-status-check)
 
 ---
 
@@ -156,9 +125,3 @@ When an alarm is triggered, the operations team should follow the troubleshootin
 
 3. **Reboot or Restore**:
    - If the root volume is failing, you can attempt to reboot the instance or restore the root volume from a snapshot.
-
----
-
-## Future Alerts
-
-This project is designed to handle the ongoing monitoring needs of EC2 instances. Any future alerts that are related to **instance monitoring** will be created and managed within this repository
