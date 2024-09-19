@@ -1,124 +1,57 @@
 provider "aws" {
-  region = "your-region"
+  region = "ap-south-1"  # Adjust this to your AWS region
 }
 
-# Data source to get the instance based on a tag filter
+# Data source to get EC2 instances based on the instance name tag
 data "aws_instances" "filtered_instances" {
   filter {
     name   = "tag:Name"
-    values = ["your-ec2-tag-name"]
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "instance_status_check_failed" {
-  count               = length(data.aws_instances.filtered_instances.ids)
-  alarm_name          = "InstanceStatusCheckFailed-${data.aws_instances.filtered_instances.ids[count.index]}"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "StatusCheckFailed_Instance"
-  namespace           = "AWS/EC2"
-  period              = "60"
-  statistic           = "Minimum"
-  threshold           = "1"
-  alarm_description   = "Triggers if the instance status check fails"
-  dimensions = {
-    InstanceId = data.aws_instances.filtered_instances.ids[count.index]
+    values = [var.instance_name]  # Replace with the instance name tag
   }
 
-  alarm_actions = [aws_sns_topic.your_sns_topic.arn] # Optional, add SNS topic for notifications
+  instance_state_names = ["running", "stopped"]
 }
 
-resource "aws_cloudwatch_metric_alarm" "system_status_check_failed" {
-  count               = length(data.aws_instances.filtered_instances.ids)
-  alarm_name          = "SystemStatusCheckFailed-${data.aws_instances.filtered_instances.ids[count.index]}"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "StatusCheckFailed_System"
-  namespace           = "AWS/EC2"
-  period              = "60"
-  statistic           = "Minimum"
-  threshold           = "1"
-  alarm_description   = "Triggers if the system status check fails"
-  dimensions = {
-    InstanceId = data.aws_instances.filtered_instances.ids[count.index]
-  }
-
-  alarm_actions = [aws_sns_topic.your_sns_topic.arn] # Optional, add SNS topic for notifications
-}
-
-# Optional SNS topic for alarm notifications
-resource "aws_sns_topic" "your_sns_topic" {
-  name = "ec2-status-check-alarm"
-}
-
-provider "aws" {
-  region = "your-region"
-}
-
-# Data source to get the instance based on a tag filter
-data "aws_instances" "filtered_instances" {
-  filter {
-    name   = "tag:Name"
-    values = ["your-ec2-tag-name"]
-  }
-}
-
-# Fetch details of each instance
-data "aws_instance" "filtered_instance" {
+# Fetching all volumes attached to each instance
+data "aws_ebs_volume" "all_volumes" {
   count = length(data.aws_instances.filtered_instances.ids)
 
-  instance_id = data.aws_instances.filtered_instances.ids[count.index]
-}
-
-# Output the volume IDs of each block device attached to the instance
-output "root_volume_id" {
-  value = data.aws_instance.filtered_instance[count.index].root_block_device.volume_id
-}
-
-output "attached_ebs_volume_ids" {
-  value = data.aws_instance.filtered_instance[count.index].ebs_block_device[*].volume_id
-}
-
-# CloudWatch alarm for EBS volume status check (example for root volume)
-resource "aws_cloudwatch_metric_alarm" "root_volume_status_check" {
-  alarm_name          = "RootVolumeStatusCheck-${data.aws_instance.filtered_instance[count.index].root_block_device.volume_id}"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "StatusCheckFailed"
-  namespace           = "AWS/EBS"
-  period              = "60"
-  statistic           = "Minimum"
-  threshold           = "1"
-  alarm_description   = "Triggers if the root EBS volume status check fails"
-  dimensions = {
-    VolumeId = data.aws_instance.filtered_instance[count.index].root_block_device.volume_id
+  most_recent = true
+  filter {
+    name   = "attachment.instance-id"
+    values = [data.aws_instances.filtered_instances.ids[count.index]]
   }
-
-  alarm_actions = [aws_sns_topic.your_sns_topic.arn] # Optional
 }
 
-# CloudWatch alarm for attached EBS volume status check
-resource "aws_cloudwatch_metric_alarm" "attached_volume_status_check" {
-  count               = length(data.aws_instance.filtered_instance[count.index].ebs_block_device)
-  alarm_name          = "AttachedVolumeStatusCheck-${data.aws_instance.filtered_instance[count.index].ebs_block_device[count.index].volume_id}"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "StatusCheckFailed"
+# Output to verify instance IDs and volume IDs (for debugging)
+output "filtered_instance_ids" {
+  value = data.aws_instances.filtered_instances.ids
+}
+
+output "attached_volume_ids" {
+  value = [for vol in data.aws_ebs_volume.all_volumes : vol.id]
+}
+
+# CloudWatch Alarms for each volume (both root and external EBS)
+resource "aws_cloudwatch_metric_alarm" "volume_status_check" {
+  count = length(data.aws_instances.filtered_instances.ids)
+
+  alarm_name          = "volume_status_check_${count.index}_${data.aws_ebs_volume.all_volumes[count.index].id}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "2"
+  metric_name         = "VolumeStatusCheckFailed"
   namespace           = "AWS/EBS"
-  period              = "60"
-  statistic           = "Minimum"
+  period              = "300"
+  statistic           = "Maximum"
   threshold           = "1"
-  alarm_description   = "Triggers if the attached EBS volume status check fails"
+  alarm_description   = "Alarm for volume status check on instance ${data.aws_instances.filtered_instances.ids[count.index]}"
   dimensions = {
-    VolumeId = data.aws_instance.filtered_instance[count.index].ebs_block_device[count.index].volume_id
+    VolumeId = data.aws_ebs_volume.all_volumes[count.index].id
   }
-
-  alarm_actions = [aws_sns_topic.your_sns_topic.arn] # Optional
+  alarm_actions = [aws_sns_topic.example.arn]  # Replace with your SNS topic ARN
 }
 
-# Optional SNS topic for alarm notifications
-resource "aws_sns_topic" "your_sns_topic" {
-  name = "ec2-volume-status-check-alarm"
+# SNS topic for alarm notifications
+resource "aws_sns_topic" "example" {
+  name = "my-sns-topic"  # Replace with your existing SNS topic
 }
-
-
