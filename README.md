@@ -49,79 +49,121 @@ Below is the overview of the CloudWatch alarms configured for monitoring EC2 ins
 
 ## Troubleshooting
 
-When an alarm is triggered, the operations team should follow the troubleshooting steps below to investigate and resolve the issue.
+When an alarm is triggered, the operations team should follow the detailed troubleshooting steps below to investigate and resolve the issue.
+
+---
 
 ### Troubleshooting: Instance Status Check Failed
 
-1. **Verify the Instance's State**:
-   - Go to the **EC2 dashboard** in the AWS Console.
-   - Check if the instance is running or in a failed state.
-   
-2. **Check CloudWatch Logs**:
-   - Review the **instance logs** in CloudWatch to identify any OS-level or software issues.
-   - Investigate application-level logs if the instance is still running but unresponsive.
+#### Description:
+This alert triggers when the EC2 instance’s **OS-level health check** fails. It typically indicates a problem with the operating system, such as failure to boot, kernel panic, or networking issues like misconfigured routes or blocked access.
 
-3. **Reboot the Instance**:
-   - If the issue persists and it appears to be OS-related, attempt to **reboot** the instance from the AWS Console.
+#### Steps to Troubleshoot:
 
-4. **Review Instance Performance**:
-   - Check the **CPU and memory utilization** to determine if resource exhaustion is causing the issue.
+1. **Verify Instance Status in EC2 Dashboard**:
+   - Go to the **AWS EC2 Dashboard** and locate the affected instance.
+   - Check if the instance is in a **running**, **stopped**, or **pending** state.
+   - If the instance is **stopped** or **pending**, there might be a provisioning issue. If it’s **running**, proceed to the next step.
+
+2. **Check System Logs in EC2 Console**:
+   - Select the instance and navigate to the **Monitoring** tab.
+   - Review **CloudWatch Logs** to identify if the instance encountered a **kernel panic** or any **boot errors**.
+   - If no logs are visible, go to **Actions** → **Instance Settings** → **Get System Logs** to retrieve boot logs directly.
+
+3. **Verify Security Groups and Network Configuration**:
+   - Confirm that the instance is attached to the correct **security group** and **VPC**.
+   - Verify that the **security group rules** allow the necessary inbound and outbound traffic (e.g., SSH/RDP ports, HTTP/HTTPS, etc.).
+   - Ensure that the **NACLs (Network Access Control Lists)** and **route tables** are configured properly to allow traffic.
+
+4. **Test Connectivity via SSH/RDP**:
+   - Try to connect to the instance using **SSH (Linux)** or **RDP (Windows)**.
+   - If connection fails, confirm the **public IP/DNS** is correct and that inbound traffic to the instance is allowed.
+
+5. **Reboot the Instance**:
+   - If the instance is unresponsive or stuck in a problematic state, **reboot** it from the AWS Console.
+   - Go to **Actions** → **Instance State** → **Reboot Instance**.
+   - Monitor the instance after the reboot to see if it recovers.
+
+6. **Check for Resource Exhaustion**:
+   - Review the **CPU utilization** and **memory metrics** under the **Monitoring** tab to ensure the instance is not **out of resources**.
+   - If the instance is resource-constrained, consider scaling up by changing the instance type.
+
+7. **Restore from AMI Backup (if needed)**:
+   - If the issue persists and troubleshooting doesn’t resolve the problem, consider restoring the instance from a known good **Amazon Machine Image (AMI)**.
+
+---
 
 ### Troubleshooting: System Status Check Failed
 
-1. **Check for AWS Outages**:
-   - Review the **AWS Health Dashboard** to see if there are any ongoing infrastructure issues in the region.
-   
-2. **Restart the Instance**:
-   - Try to **stop** and **start** the instance. This will move the instance to new underlying hardware if there’s a hardware failure.
+#### Description:
+This alert triggers when the **system-level health check** fails, indicating potential hardware, networking, or AWS infrastructure issues. This could include a failure of AWS's underlying hardware hosting the instance or a networking problem at AWS’s infrastructure level.
 
-3. **Inspect Networking Issues**:
-   - Check if there are **networking issues** (e.g., VPC, security groups, or routing tables) affecting the instance's connectivity.
+#### Steps to Troubleshoot:
 
-4. **Contact AWS Support**:
-   - If AWS infrastructure issues persist, **open a support case** with AWS for further assistance.
+1. **Check AWS Health Dashboard**:
+   - First, check the **AWS Service Health Dashboard** to see if AWS is experiencing any known infrastructure outages or issues in the region where your instance resides.
+
+2. **Review System Metrics in CloudWatch**:
+   - In the **EC2 Dashboard**, go to **Monitoring** for the affected instance.
+   - Review system-level metrics such as **InstanceReachability**, **Disk I/O**, **CPU utilization**, and **Network throughput**.
+   - If you observe abnormal activity (e.g., high CPU or disk I/O), it may indicate underlying system issues.
+
+3. **Check the Hypervisor (if applicable)**:
+   - Instances hosted on **dedicated hosts** or **dedicated instances** can experience problems with the underlying hardware.
+   - If applicable, check the hypervisor logs to see if hardware issues are impacting the instance.
+
+4. **Stop and Start the Instance**:
+   - If the issue is due to an underlying hardware failure, **stop** and **start** the instance (do not reboot). This action will move the instance to a different underlying host in AWS's data center.
+   - After starting the instance, recheck the **system status** to verify if the issue is resolved.
+
+5. **Check Network Connectivity**:
+   - If network reachability is the issue, verify that the **subnet route tables**, **NACLs**, and **security groups** are configured correctly.
+   - Ensure that **internet gateway** and **NAT gateway** configurations are correct for external traffic.
+
+6. **Restore the Instance from Backup**:
+   - If the system is completely unresponsive and stopping/starting does not resolve the issue, restore the instance from an **EBS snapshot** or **AMI backup**.
+
+7. **Contact AWS Support**:
+   - If AWS system issues persist and the above steps do not resolve the problem, open a support case with **AWS Support** and provide detailed logs and steps taken.
+
+---
 
 ### Troubleshooting: Attached EBS Volume Status Check
 
-1. **Identify the Problematic EBS Volume**:
-   - Go to the **EC2 dashboard** and select the affected instance.
-   - Navigate to the **Storage** tab and identify which EBS volume is failing.
+#### Description:
+This alert triggers when an **attached EBS volume** (either root or secondary) experiences issues such as failing I/O operations, becoming disconnected, or facing **health check failures**. This can indicate a problem with the storage device or connectivity issues between the instance and the EBS volume.
 
-2. **Check EBS Metrics**:
-   - Use **CloudWatch** to check the following metrics for the EBS volume:
-     - `VolumeReadOps`, `VolumeWriteOps`, `VolumeIdleTime`, `VolumeThroughputPercentage`.
-   - Look for any anomalies in read/write operations or throughput.
+#### Steps to Troubleshoot:
 
-3. **Detach and Re-Attach the EBS Volume**:
-   - If there are connectivity issues with the EBS volume, try **detaching** and **re-attaching** the volume to the instance.
+1. **Identify the Affected EBS Volume**:
+   - In the **EC2 Dashboard**, select the affected instance and navigate to the **Storage** tab.
+   - Identify which attached EBS volume is showing errors or **unhealthy status**.
 
-4. **Restore from Snapshot**:
-   - If the volume is failing due to corruption, restore the data from the latest EBS **snapshot** and create a new volume.
+2. **Check EBS Volume Metrics in CloudWatch**:
+   - In **CloudWatch**, review metrics for the EBS volume, such as:
+     - `VolumeReadOps` and `VolumeWriteOps`: High values here indicate excessive I/O operations.
+     - `VolumeIdleTime`: Zero idle time could mean the volume is overloaded.
+     - `VolumeThroughputPercentage`: A high percentage may indicate the volume is hitting its throughput limit.
+   
+3. **Detach and Reattach the EBS Volume**:
+   - If the volume shows **disconnected** or **unhealthy** status, try detaching and reattaching the volume.
+   - Navigate to the **EC2 Dashboard**, choose the affected volume under **Elastic Block Store (EBS)**, and select **Detach Volume**.
+   - Once detached, reattach it to the same or another instance.
 
-5. **Check for IOPS Limitations**:
-   - Verify if the volume is hitting its IOPS limit. If so, consider upgrading to **provisioned IOPS**.
+4. **Verify EBS Volume Integrity**:
+   - Run a **file system check** on the EBS volume (e.g., `fsck` for Linux or `chkdsk` for Windows) to verify that the volume is not corrupted.
 
-### Troubleshooting: Secondary EBS Volume Status Check
+5. **Resize the Volume (if needed)**:
+   - If the volume is running out of space or hitting IOPS/throughput limits, consider **resizing the volume** or upgrading it to a higher-performing type, such as **Provisioned IOPS (io1/io2)**.
 
-1. **Check Secondary Volume Logs**:
-   - In the AWS Console, verify the **secondary EBS volume** logs for errors or anomalies.
+6. **Restore from Snapshot**:
+   - If the EBS volume is severely corrupted, restore it from an earlier **EBS snapshot** to recover lost data.
 
-2. **Validate Volume Connection**:
-   - Ensure that the secondary EBS volume is properly attached and recognized by the EC2 instance.
+7. **Check Volume Attachment to Instance**:
+   - Ensure that the volume is correctly attached to the instance (with proper mount points or drive letters in case of Windows).
+   - For Linux instances, check if the volume is properly mounted using `df -h` or `lsblk`.
 
-3. **Check Volume Utilization**:
-   - Review the volume's IOPS and throughput metrics to determine if it's hitting performance limits.
+8. **Replace the Volume (if needed)**:
+   - If the volume is permanently damaged or corrupted, you may need to create a new EBS volume from a snapshot and attach it to the instance.
 
-4. **Restore from Snapshot**:
-   - If the secondary volume is corrupted, restore from a previous snapshot.
-
-### Troubleshooting: Root EBS Volume Status Check
-
-1. **Verify Root Volume Health**:
-   - In the AWS Console, check the **root EBS volume** for any health-related issues.
-
-2. **Review IOPS and Latency**:
-   - Use CloudWatch metrics to check if the root volume is hitting its IOPS limit or experiencing high latency.
-
-3. **Reboot or Restore**:
-   - If the root volume is failing, you can attempt to reboot the instance or restore the root volume from a snapshot.
+---
