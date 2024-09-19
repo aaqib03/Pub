@@ -1,52 +1,3 @@
-## Alerts Overview
-
-Below is the overview of the CloudWatch alarms configured for monitoring EC2 instances and EBS volumes:
-
-| **Alert Name**                  | **Metric**                   | **Description**                                                                 | **Threshold** | **Period** | **Evaluation** |
-| ------------------------------- | ---------------------------- | ------------------------------------------------------------------------------- | ------------- | ---------- | -------------- |
-| **Instance Status Check Failed** | `StatusCheckFailed_Instance`  | Triggers if the EC2 instance fails the instance-level status check.              | 1             | 60 seconds | 1              |
-| **System Status Check Failed**   | `StatusCheckFailed_System`    | Triggers if the system-level (AWS hardware/network) check fails for the instance.| 1             | 60 seconds | 1              |
-| **Attached EBS Volume Status Check** | `StatusCheckFailed_AttachedEBS` | Monitors the health of all attached EBS volumes. Triggers on volume failure. | 1             | 300 seconds | 1              |
-| **Secondary EBS Volume Status Check** | `VolumeStatusCheckFailed` | Monitors the health of the secondary EBS volume specifically. Triggers on failure.| 1             | 300 seconds | 1              |
-| **Root EBS Volume Status Check**  | `VolumeStatusCheckFailed`    | Monitors the health of the root EBS volume specifically. Triggers on failure.    | 1             | 300 seconds | 1              |
-
-### 1. **Instance Status Check Failed**
-- **Metric**: `StatusCheckFailed_Instance`
-- **Purpose**: Monitors the EC2 instance’s **operating system health**. This alert will notify the operations team when the OS is unresponsive or facing critical errors.
-- **Trigger Condition**: The alarm triggers when the **instance-level health check** fails (returns `1`).
-- **Threshold**: 1 (Trigger on first failure).
-- [**Troubleshooting**](#troubleshooting-instance-status-check-failed)
-
-### 2. **System Status Check Failed**
-- **Metric**: `StatusCheckFailed_System`
-- **Purpose**: Monitors the **AWS system-level health** of the instance. This alert captures issues with the underlying AWS infrastructure (hardware, network, etc.).
-- **Trigger Condition**: The alarm triggers when the **system-level health check** fails (returns `1`), indicating AWS infrastructure issues.
-- **Threshold**: 1 (Trigger on first failure).
-- [**Troubleshooting**](#troubleshooting-system-status-check-failed)
-
-### 3. **Attached EBS Volume Status Check**
-- **Metric**: `StatusCheckFailed_AttachedEBS`
-- **Purpose**: Monitors the health of **all EBS volumes attached** to the instance. The alert triggers when any attached volume fails its health check.
-- **Trigger Condition**: The alarm triggers if **any EBS volume attached** to the instance fails its health check (returns `1`).
-- **Threshold**: 1 (Trigger on first failure).
-- [**Troubleshooting**](#troubleshooting-attached-ebs-volume-status-check)
-
-### 4. **Secondary EBS Volume Status Check**
-- **Metric**: `VolumeStatusCheckFailed`
-- **Purpose**: Monitors the **secondary EBS volume** attached to the EC2 instance. This alert will notify when the secondary volume faces issues like corruption or connectivity failure.
-- **Trigger Condition**: The alarm triggers if the **secondary EBS volume** fails its health check (returns `1`).
-- **Threshold**: 1 (Trigger on first failure).
-- [**Troubleshooting**](#troubleshooting-secondary-ebs-volume-status-check)
-
-### 5. **Root EBS Volume Status Check**
-- **Metric**: `VolumeStatusCheckFailed`
-- **Purpose**: Monitors the **root EBS volume** (the boot volume) attached to the EC2 instance. This alert notifies the team if the boot volume fails or experiences issues that may impact instance functionality.
-- **Trigger Condition**: The alarm triggers if the **root EBS volume** fails its health check (returns `1`).
-- **Threshold**: 1 (Trigger on first failure).
-- [**Troubleshooting**](#troubleshooting-root-ebs-volume-status-check)
-
----
-
 ## Troubleshooting
 
 When an alarm is triggered, the operations team should follow the detailed troubleshooting steps below to investigate and resolve the issue.
@@ -58,6 +9,10 @@ When an alarm is triggered, the operations team should follow the detailed troub
 #### Description:
 This alert triggers when the EC2 instance’s **OS-level health check** fails. It typically indicates a problem with the operating system, such as failure to boot, kernel panic, or networking issues like misconfigured routes or blocked access.
 
+#### Logs to Check:
+- **System Log**: Look for boot errors, kernel panics, service failures, or other system-level issues.
+- **Security Log**: Check for unauthorized access attempts, permission changes, or failed logins that might affect the instance’s operations.
+
 #### Steps to Troubleshoot:
 
 1. **Verify Instance Status in EC2 Dashboard**:
@@ -67,7 +22,7 @@ This alert triggers when the EC2 instance’s **OS-level health check** fails. I
 
 2. **Check System Logs in EC2 Console**:
    - Select the instance and navigate to the **Monitoring** tab.
-   - Review **CloudWatch Logs** to identify if the instance encountered a **kernel panic** or any **boot errors**.
+   - Review the **System Log** in CloudWatch to identify if the instance encountered a **kernel panic** or any **boot errors**.
    - If no logs are visible, go to **Actions** → **Instance Settings** → **Get System Logs** to retrieve boot logs directly.
 
 3. **Verify Security Groups and Network Configuration**:
@@ -97,6 +52,10 @@ This alert triggers when the EC2 instance’s **OS-level health check** fails. I
 
 #### Description:
 This alert triggers when the **system-level health check** fails, indicating potential hardware, networking, or AWS infrastructure issues. This could include a failure of AWS's underlying hardware hosting the instance or a networking problem at AWS’s infrastructure level.
+
+#### Logs to Check:
+- **System Log**: Check for system-level events, hardware failures, or issues with services that are tied to the AWS infrastructure.
+- **Amazon CloudWatch Agent Log**: If you’re not receiving any metrics/logs, this log can help identify issues with the agent.
 
 #### Steps to Troubleshoot:
 
@@ -133,6 +92,11 @@ This alert triggers when the **system-level health check** fails, indicating pot
 #### Description:
 This alert triggers when an **attached EBS volume** (either root or secondary) experiences issues such as failing I/O operations, becoming disconnected, or facing **health check failures**. This can indicate a problem with the storage device or connectivity issues between the instance and the EBS volume.
 
+#### Logs to Check:
+- **System Log**: Look for issues related to EBS volume mounting, disconnections, or I/O bottlenecks.
+- **Amazon CloudWatch Agent Log**: If you are not seeing any volume-specific metrics, this log will help diagnose agent-related issues.
+- **Security Log**: If there’s a failure related to permissions or access control to the EBS volume, check for logs related to access control changes.
+
 #### Steps to Troubleshoot:
 
 1. **Identify the Affected EBS Volume**:
@@ -165,5 +129,3 @@ This alert triggers when an **attached EBS volume** (either root or secondary) e
 
 8. **Replace the Volume (if needed)**:
    - If the volume is permanently damaged or corrupted, you may need to create a new EBS volume from a snapshot and attach it to the instance.
-
----
