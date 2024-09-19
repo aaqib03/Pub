@@ -12,31 +12,17 @@ data "aws_instances" "filtered_instances" {
   instance_state_names = ["running", "stopped"]
 }
 
-# Fetching all volumes attached to each instance
-data "aws_ebs_volume" "all_volumes" {
-  count = length(data.aws_instances.filtered_instances.ids)
-
-  most_recent = true
-  filter {
-    name   = "attachment.instance-id"
-    values = [data.aws_instances.filtered_instances.ids[count.index]]
-  }
+# Fetch instance details to get the attached volumes
+data "aws_instance" "filtered_instance_details" {
+  count       = length(data.aws_instances.filtered_instances.ids)
+  instance_id = data.aws_instances.filtered_instances.ids[count.index]
 }
 
-# Output to verify instance IDs and volume IDs (for debugging)
-output "filtered_instance_ids" {
-  value = data.aws_instances.filtered_instances.ids
-}
-
-output "attached_volume_ids" {
-  value = [for vol in data.aws_ebs_volume.all_volumes : vol.id]
-}
-
-# CloudWatch Alarms for each volume (both root and external EBS)
+# CloudWatch Alarms for each volume attached to each instance
 resource "aws_cloudwatch_metric_alarm" "volume_status_check" {
-  count = length(data.aws_instances.filtered_instances.ids)
+  count = length(data.aws_instances.filtered_instances.ids) * length(data.aws_instance.filtered_instance_details[count.index].ebs_block_device)
 
-  alarm_name          = "volume_status_check_${count.index}_${data.aws_ebs_volume.all_volumes[count.index].id}"
+  alarm_name          = "volume_status_check_${count.index}_${data.aws_instance.filtered_instance_details[count.index].ebs_block_device[count.index].volume_id}"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = "2"
   metric_name         = "VolumeStatusCheckFailed"
@@ -46,12 +32,22 @@ resource "aws_cloudwatch_metric_alarm" "volume_status_check" {
   threshold           = "1"
   alarm_description   = "Alarm for volume status check on instance ${data.aws_instances.filtered_instances.ids[count.index]}"
   dimensions = {
-    VolumeId = data.aws_ebs_volume.all_volumes[count.index].id
+    VolumeId = data.aws_instance.filtered_instance_details[count.index].ebs_block_device[count.index].volume_id
   }
   alarm_actions = [aws_sns_topic.example.arn]  # Replace with your SNS topic ARN
 }
 
-# SNS topic for alarm notifications
+# SNS Topic for notification
 resource "aws_sns_topic" "example" {
-  name = "my-sns-topic"  # Replace with your existing SNS topic
+  name = "my-sns-topic"  # Replace with your SNS topic
+}
+
+# Outputs for debugging (to see which instance and volumes are fetched)
+output "filtered_instance_ids" {
+  value = data.aws_instances.filtered_instances.ids
+}
+
+# Updated output for attached volume IDs from all instances and all volumes
+output "attached_volume_ids" {
+  value = flatten([for instance in data.aws_instance.filtered_instance_details : instance.ebs_block_device[*].volume_id])
 }
