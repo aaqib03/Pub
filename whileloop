@@ -1,0 +1,72 @@
+import time
+import boto3
+
+# Assuming you already have your S3 client initialized
+s3_client = boto3.client('s3')
+
+# Set a longer timeout if needed for larger files
+GD_MALWARE2_SCAN_TIMEOUT = 600  # Timeout in seconds (10 minutes)
+
+# Assuming these are predefined
+l_file_to_process = 'your_file_name_here'
+GD_MALWARE2_SCAN_SERVICE_BUCKET = 'your_bucket_name_here'
+l_gd_scan_key = f"{LAMBDA_NAME}/{l_file_to_process}"
+
+try:
+    # Upload the file to S3 scan bucket
+    s3_client.upload_file(Filename=l_file_to_process, Bucket=GD_MALWARE2_SCAN_SERVICE_BUCKET, Key=l_gd_scan_key)
+    
+    # Wait until the file is available in S3 before starting the polling
+    waiter = s3_client.get_waiter('object_exists')
+    waiter.wait(Bucket=GD_MALWARE2_SCAN_SERVICE_BUCKET, Key=l_gd_scan_key)
+    
+    logger.info(f"File {l_file_to_process} uploaded for GuardDuty scan on service bucket {GD_MALWARE2_SCAN_SERVICE_BUCKET}")
+    
+except Exception as copy_error:
+    logger.error(f"ERROR: Unable to upload file to GuardDuty scan bucket: {l_file_to_process}")
+    logger.error(copy_error)
+    return  # Exit the Lambda function if file upload fails
+
+# Start the polling loop to check the tag
+l_polling_start_time = time.time()
+
+# Initialize the scan result to None
+l_scan_result = None
+
+while l_scan_result is None:
+    l_current_time = time.time()
+    l_elapsed_time = l_current_time - l_polling_start_time
+    
+    if l_elapsed_time > GD_MALWARE2_SCAN_TIMEOUT:
+        logger.error("GuardDuty scan result cannot be fetched within the specified time limit")
+        break  # Exit the loop if timeout is reached
+    
+    try:
+        # Fetch the object tags from S3
+        l_response = s3_client.get_object_tagging(Bucket=GD_MALWARE2_SCAN_SERVICE_BUCKET, Key=l_gd_scan_key)
+        tags = l_response.get('TagSet', [])
+        
+        # Loop through tags to find the scan result
+        for tag in tags:
+            if tag['Key'] == 'GuardDutyMalwareScanStatus':
+                l_scan_result = tag['Value']
+                logger.info(f"Scan result: {l_scan_result}")
+                break  # Break the loop once the result is found
+        
+        if l_scan_result is None:
+            # If no tag found, wait before trying again
+            logger.info("Tag not found yet, retrying after 10 seconds...")
+            time.sleep(10)  # Wait for 10 seconds before polling again
+    
+    except Exception as e:
+        logger.error(f"Failed to retrieve object tag for {l_file_to_process}: {str(e)}")
+        time.sleep(10)  # Wait before retrying in case of an error
+
+# Process based on scan result
+if l_scan_result is None:
+    # Handle case when no result is found after the timeout
+    logger.error("Scan result not available, marking scan as failed.")
+    l_transform_malware2_status = "ERROR"
+else:
+    # Handle valid scan result (e.g., threat or non-threat)
+    l_transform_malware2_status = l_scan_result
