@@ -1,3 +1,9 @@
 Get-ChildItem -Path "C:\Path\To\Your\Folder" -Recurse -File | ForEach-Object {
     Select-String -Path $_.FullName -Pattern "C:\" | Select-Object FileName, LineNumber, Line
 }
+
+Get-ChildItem -Path "C:\Path\To\Your\Folder" -Recurse -File | ForEach-Object {
+    if (Select-String -Path $_.FullName -Pattern "C:\" -Quiet) {
+        $_.FullName
+    }
+}
