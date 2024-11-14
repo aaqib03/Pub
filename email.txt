@@ -1,44 +1,47 @@
-Here's a draft email for Luiz to explain what to communicate to Banco Estado and BRDMX regarding the encryption and security updates:
+Here’s a draft email to inform the client about the cipher requirements for connecting to your AWS SFTP transfer server:
 
 
 ---
 
-Subject: Guidance on Communicating Encryption and Security Updates to Banco Estado and BRDMX
+Subject: Important Update: Encryption Requirement for SFTP Connections to Our Server
 
-Hi Luiz,
+Dear [Client's Name],
 
-To help Banco Estado and BRDMX understand and implement our recent encryption updates, here’s a detailed explanation for your communication with them. Please make sure to cover the following points:
+We are reaching out to inform you of an important update regarding the security of file transfers to our AWS SFTP server. To maintain a high standard of data protection, we have updated our server configuration to enforce the use of a stronger encryption algorithm for all SFTP connections.
 
-1. Encryption Update Overview
-We are in the process of updating our file transfer security to meet the latest information security standards. This update includes removing outdated encryption ciphers and enforcing a stronger encryption protocol.
+What Has Changed
 
+Our AWS SFTP server now requires a minimum encryption standard of AES-256-GCM for establishing secure connections. This updated requirement helps ensure that all data transferred between your SFTP client and our server is encrypted using a highly secure algorithm, in compliance with the latest information security practices.
 
-2. Required Encryption Standard
-Banco Estado and BRDMX must now use AES-256-GCM encryption (or a stronger protocol) for all file transfers with us. AES-256-GCM (Advanced Encryption Standard with Galois/Counter Mode) provides robust security and ensures data integrity, which is critical to protecting the confidentiality of our shared information.
+What You Need to Do
 
+To connect to our server successfully, please ensure that your SFTP client is configured to support AES-256-GCM (or a stronger cipher). Here are some steps to guide you:
 
-3. Reason for the Change
-This update aligns with our information security requirements and industry standards. Using outdated or weaker encryption methods poses security risks that could impact the integrity of our data and our compliance with security policies.
-
-
-4. Next Steps for Banco Estado and BRDMX
-Please instruct Banco Estado and BRDMX to check their current file transfer systems to confirm they support AES-256-GCM encryption. If they are using an older or different encryption method, they will need to update their configurations to align with this new standard.
+1. Check Cipher Settings in Your SFTP Client: Many SFTP clients (e.g., WinSCP, FileZilla, Cyberduck) allow you to specify or prioritize ciphers in their settings. Please verify that AES-256-GCM is either enabled or prioritized in your client’s encryption options.
 
 
-5. Testing and Validation
-It would be beneficial for Banco Estado and BRDMX to conduct a test transfer with the updated encryption settings before fully implementing them. This will help to confirm compatibility and ensure there are no disruptions in our secure file transfers.
+2. Update if Needed: If your current SFTP client does not support AES-256-GCM, you may need to update to a newer version or use an alternative client that includes this encryption option.
+
+
+3. Test Connection: After adjusting the settings, we recommend testing your connection to ensure compatibility with our updated server policy and avoid any disruptions in file transfers.
 
 
 
-Please let me know if there are any questions or if further details are needed. Ensuring that Banco Estado and BRDMX fully understand these updates will help maintain the security and integrity of our data transfers.
+Why This Update Matters
 
-Thank you for handling this communication.
+Using AES-256-GCM strengthens the encryption of the connection between your SFTP client and our server, protecting your data during transit. This change aligns with industry standards and best practices for secure file transfers.
+
+If you have any questions or need assistance configuring your SFTP client, please feel free to reach out. We appreciate your cooperation in helping us maintain a secure and compliant environment for your data transfers.
+
+Thank you for your attention to this update.
 
 Best regards,
 [Your Name]
+[Your Position]
+[Your Contact Information]
 
 
 ---
 
-This draft provides Luiz with a clear structure for what to communicate to Banco Estado and BRDMX. Let me know if you'd like any further customization!
+This email explains the update clearly, what the client needs to do, and provides context on why this change is important. Let me know if you need any further adjustments!
 
