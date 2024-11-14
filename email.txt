@@ -1,0 +1,44 @@
+Here's a draft email for Luiz to explain what to communicate to Banco Estado and BRDMX regarding the encryption and security updates:
+
+
+---
+
+Subject: Guidance on Communicating Encryption and Security Updates to Banco Estado and BRDMX
+
+Hi Luiz,
+
+To help Banco Estado and BRDMX understand and implement our recent encryption updates, here’s a detailed explanation for your communication with them. Please make sure to cover the following points:
+
+1. Encryption Update Overview
+We are in the process of updating our file transfer security to meet the latest information security standards. This update includes removing outdated encryption ciphers and enforcing a stronger encryption protocol.
+
+
+2. Required Encryption Standard
+Banco Estado and BRDMX must now use AES-256-GCM encryption (or a stronger protocol) for all file transfers with us. AES-256-GCM (Advanced Encryption Standard with Galois/Counter Mode) provides robust security and ensures data integrity, which is critical to protecting the confidentiality of our shared information.
+
+
+3. Reason for the Change
+This update aligns with our information security requirements and industry standards. Using outdated or weaker encryption methods poses security risks that could impact the integrity of our data and our compliance with security policies.
+
+
+4. Next Steps for Banco Estado and BRDMX
+Please instruct Banco Estado and BRDMX to check their current file transfer systems to confirm they support AES-256-GCM encryption. If they are using an older or different encryption method, they will need to update their configurations to align with this new standard.
+
+
+5. Testing and Validation
+It would be beneficial for Banco Estado and BRDMX to conduct a test transfer with the updated encryption settings before fully implementing them. This will help to confirm compatibility and ensure there are no disruptions in our secure file transfers.
+
+
+
+Please let me know if there are any questions or if further details are needed. Ensuring that Banco Estado and BRDMX fully understand these updates will help maintain the security and integrity of our data transfers.
+
+Thank you for handling this communication.
+
+Best regards,
+[Your Name]
+
+
+---
+
+This draft provides Luiz with a clear structure for what to communicate to Banco Estado and BRDMX. Let me know if you'd like any further customization!
+
