@@ -1,100 +1,105 @@
 # GuardDuty Malware Protection - Transfer Service Offering
 
 ## Introduction
-This document provides a comprehensive guide to enable and implement GuardDuty (GD) malware protection in the **Standard Transfer Service Offering**. With the introduction of **Lambda v13** as part of **Module v3**, clients can enable scanning capabilities for uploaded files. This process uses two dedicated S3 buckets, `gd_scanning` and `malware_s3`, which are unique to each AWS region. Multiple clients in the same region share these buckets for scanning and storing threat files.
+This document provides a comprehensive guide to implement GuardDuty (GD) malware protection in the **Standard Transfer Service Offering**. The system uses **Lambda v13** (part of **Module v3**) to enable scanning capabilities for uploaded files. The process leverages two regional S3 buckets:
+- **`gd_scanning` bucket**: For GuardDuty to scan files.
+- **`malware_s3` bucket**: To store files flagged as containing malware (`THREATS_FOUND`).
+
+These buckets are shared across multiple clients within the same region. The scanning process relies on tags applied by GuardDuty after scanning, and only files with a specific action (`malware2`) in the **DynamoDB Transmission Matrix** are processed.
 
 ---
 
-## Tag Definitions and Process Flow
+## Tags Applied by GuardDuty
+After scanning, GuardDuty applies the following tags to files:
 
-### Tags Applied by GuardDuty
-- **NO_THREATS_FOUND**: The file is clean and safe to process.
-- **THREATS_FOUND**: The file contains malware and is flagged for further actions.
-- **UNSUPPORTED**: The file type is not supported for scanning.
-- **ACCESS_DENIED**: GuardDuty could not access the file for scanning.
-- **FAILED**: The scanning process encountered an error.
+- **NO_THREATS_FOUND**: File is clean and routed to the consumer bucket.
+- **THREATS_FOUND**: File contains malware and is routed to the `malware_s3` bucket.
+- **UNSUPPORTED**: File type is not supported for scanning; quarantined in the source bucket.
+- **ACCESS_DENIED**: GuardDuty could not access the file; quarantined in the source bucket.
+- **FAILED**: Scanning encountered an error; quarantined in the source bucket.
 
-### Process Flow
-1. **Inbound File Handling**:
-   - Files are uploaded via protocols such as SFTP, C:D, or S3-to-S3.
-   - Encrypted files are placed in the external files bucket.
+---
 
-2. **File Processing**:
-   - **Step 1**: The Lambda runtime is started.
-   - **Step 2**: The encrypted file is copied from S3 to the local ephemeral storage (`/tmp`).
-   - **Step 3**: The file is decrypted and temporarily stored in the Lambda runtime.
+## Process Flow
 
-3. **Malware Scanning**:
-   - **Step 4.1**: The decrypted file is uploaded to the `gd_scanning` bucket for GuardDuty scanning.
-   - **Step 4.2**: The Lambda function waits (based on the `polling_interval` environment variable) for GuardDuty to apply a tag.
-   - **Step 4.3**: The tag is evaluated, and the file is routed accordingly:
-     - **NO_THREATS_FOUND**: Sent to the consumer bucket.
-     - **THREATS_FOUND**: Moved to the `malware_s3` bucket.
-     - **Other Tags**: Quarantined in the source bucket or flagged for further review.
+1. **File Reception**:
+   - Files are uploaded to the external files bucket in encrypted form.
 
-4. **Post-Processing**:
-   - Scanned files are deleted from `/tmp` after processing to free up runtime space.
+2. **Lambda Processing**:
+   - Lambda v13 decrypts the file and temporarily stores it in `/tmp`.
+   - The decrypted file is uploaded to the `gd_scanning` bucket.
+
+3. **GuardDuty Scanning**:
+   - GuardDuty scans the file and applies a tag.
+   - Tags include `NO_THREATS_FOUND`, `THREATS_FOUND`, `UNSUPPORTED`, `ACCESS_DENIED`, or `FAILED`.
+
+4. **File Routing**:
+   - **NO_THREATS_FOUND**: File is routed to the consumer bucket.
+   - **THREATS_FOUND**: File is moved to the `malware_s3` bucket.
+   - **Other Tags**: File is quarantined in the source bucket.
+
+5. **Post-Processing**:
+   - Temporary files in Lambda are deleted to optimize runtime space.
 
 ---
 
 ## Implementation Steps
 
 ### Prerequisites
-1. **Lambda v13**: Ensure the Lambda function is updated to version 13 from Module v3 of the Standard Transfer Service setup.
+1. **Lambda v13**:
+   - Ensure the Lambda function is updated to version 13 from Module v3.
 2. **Environment Variables**:
-   - `GD_SCANNING_BUCKET`: Name of the S3 bucket used for GuardDuty scanning.
-   - `MALWARE_S3_BUCKET`: Name of the S3 bucket used for storing threat files.
-   - `ENABLE_SCANNING`: Boolean value (`true` or `false`) to enable or disable scanning.
-   - `POLLING_INTERVAL`: Time (in seconds) for the Lambda function to wait for GuardDuty to apply tags.
+   - `GD_SCANNING_BUCKET`: S3 bucket for scanning.
+   - `MALWARE_S3_BUCKET`: S3 bucket for storing threat files.
+   - `ENABLE_SCANNING`: Boolean (`true`/`false`) to enable/disable scanning.
+   - `POLLING_INTERVAL`: Time (seconds) for Lambda to wait for GuardDuty tags.
 3. **DynamoDB Transmission Matrix**:
-   - The `malware2` action must be set for file patterns to enable GuardDuty scanning.
+   - The `malware2` action must be present for files to be processed.
 
 ### Steps to Set Up
 1. **Create S3 Buckets**:
-   - `gd_scanning`: This bucket is used to upload decrypted files for GuardDuty scanning.
-   - `malware_s3`: This bucket stores files flagged with `THREATS_FOUND`.
+   - `gd_scanning`: For GuardDuty scanning.
+   - `malware_s3`: For storing flagged files.
 
-2. **Update Lambda Configuration**:
-   - Deploy **Lambda v13**.
-   - Set the required environment variables (`GD_SCANNING_BUCKET`, `MALWARE_S3_BUCKET`, `ENABLE_SCANNING`, `POLLING_INTERVAL`).
+2. **Configure Lambda**:
+   - Deploy Lambda v13.
+   - Set the environment variables.
 
-3. **Configure DynamoDB**:
-   - Verify that the transmission matrix table includes `malware2` as the set action for applicable file patterns.
+3. **Update DynamoDB Transmission Matrix**:
+   - Add `malware2` as the set action for applicable file patterns.
 
 4. **Testing**:
-   - Upload test files to ensure they are processed, scanned, and routed based on the GuardDuty tags.
+   - Upload test files and verify processing and routing.
 
 5. **Monitoring**:
-   - Enable CloudWatch Logs for the Lambda function to track processing and scanning activities.
-   - Set up GuardDuty findings export for centralized threat visibility.
-
----
-
-## Notes
-- Scanning will not work if the **DynamoDB transmission matrix table** does not include `malware2` as an action for the file.
-- The scanning process is region-specific, so ensure that the `gd_scanning` and `malware_s3` buckets are created in the correct region.
-- Cost considerations should be evaluated as multiple clients may share the same S3 buckets for scanning and threat storage in a region.
+   - Enable CloudWatch Logs to monitor processing.
+   - Export GuardDuty findings for centralized threat management.
 
 ---
 
 ## Technical Architecture Diagram
 
-Refer to the attached diagram for a visual representation of the process flow.
+Below is the technical architecture diagram illustrating the process flow for GuardDuty malware protection.
+
+![Technical Architecture Diagram](./path/to/your/image.png)
+
+> Replace `./path/to/your/image.png` with the actual path or URL of your image file.
 
 ---
 
 ## Troubleshooting
-1. **Files not scanned**:
-   - Verify that `ENABLE_SCANNING` is set to `true` in the Lambda environment variables.
-   - Check the `POLLING_INTERVAL` value and adjust if necessary.
+1. **Files not processed**:
+   - Ensure `ENABLE_SCANNING` is set to `true`.
+   - Check the `POLLING_INTERVAL` value.
+
 2. **Tags not applied**:
-   - Ensure the file format is supported by GuardDuty.
-   - Confirm that GuardDuty is enabled for the specific AWS region.
+   - Ensure file types are supported by GuardDuty.
+   - Verify GuardDuty is enabled in the region.
 
 3. **Incorrect Routing**:
-   - Verify the configuration of the transmission matrix in DynamoDB.
-   - Check S3 bucket policies to ensure proper access permissions.
+   - Check DynamoDB matrix configuration.
+   - Verify S3 bucket policies and permissions.
 
 ---
 
-This document serves as a complete guide to understanding, setting up, and troubleshooting GuardDuty malware protection in the Standard Transfer Service Offering.
+This document provides all necessary details for setting up, managing, and troubleshooting GuardDuty malware protection in the Standard Transfer Service.
