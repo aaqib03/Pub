@@ -1,9 +1,15 @@
-Get-ChildItem -Path "C:\Path\To\Your\Folder" -Recurse -File | ForEach-Object {
-    Select-String -Path $_.FullName -Pattern "C:\" | Select-Object FileName, LineNumber, Line
-}
+Sure, here are some key points on why you might want to upgrade from gp2 to gp3:
 
-Get-ChildItem -Path "C:\Path\To\Your\Folder" -Recurse -File | ForEach-Object {
-    if (Select-String -Path $_.FullName -Pattern "C:\" -Quiet) {
-        $_.FullName
-    }
-}
+Cost Savings: gp3 volumes are generally cheaper than gp2, helping you save on storage costs.
+
+Consistent Performance: gp3 offers a baseline of 3,000 IOPS regardless of volume size, providing more predictable performance.
+
+Configurable IOPS and Throughput: You can independently set IOPS and throughput levels to match your workload requirements without adjusting the volume size.
+
+Higher Throughput: gp3 can deliver up to 1,000 MB/s of throughput, beneficial for data-intensive applications.
+
+Flexibility: gp3 allows you to scale performance independently from storage capacity, giving you more control over your storage setup.
+
+
+Switching to gp3 can provide better performance, cost efficiency, and flexibility compared to gp2.
+
