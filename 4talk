@@ -1,61 +1,127 @@
-1. Combined two roles into a single Terraform EC2 instance automation for all regions and UAT environments.
+Let me verify if any points were missed:
+
+Here are your original 20 points cross-referenced against the categorized list:
+
+1. Combined two roles into a single Terraform EC2 instance automation for all regions and UAT environments. ✔ Included under "Automation and Infrastructure Improvements."
 
 
-2. Refactored the Terraform project to separate UAT and PROD resources into two different projects.
+2. Refactored the Terraform project to separate UAT and PROD resources into two different projects. ✔ Included under "Automation and Infrastructure Improvements."
 
 
-3. Adjusted EC2 auto-start/stop timings for EOM batches to address expected/observed delays.
+3. Adjusted EC2 auto-start/stop timings for EOM batches to address expected/observed delays. ✔ Included under "Automation and Infrastructure Improvements."
 
 
-4. Released compliance updates for scheme software on UAT servers.
+4. Released compliance updates for scheme software on UAT servers. ✔ Included under "Compliance and Documentation Updates."
 
 
-5. Tested the V3 module for transfer service deployed in SCB UAT, FRK, and Dublin regions.
+5. Tested the V3 module for transfer service deployed in SCB UAT, FRK, and Dublin regions. ✔ Included under "Automation and Infrastructure Improvements."
 
 
-6. Set up a new transfer client with the V3 module to support any client requiring new features.
+6. Set up a new transfer client with the V3 module to support any client requiring new features. ✔ Included under "Automation and Infrastructure Improvements."
 
 
-7. Decommissioned the client’s large file transfer service setup using an old version.
+7. Decommissioned the client’s large file transfer service setup using an old version. ✖ Missed. Should be under Deployment and Service Enhancements.
 
 
-8. Improved V3 transfer service by replacing hardcoded values with variables for better control.
+8. Improved V3 transfer service by replacing hardcoded values with variables for better control. ✔ Included under "Automation and Infrastructure Improvements."
 
 
-9. Migrated SCB UAT clients to the latest V3 transfer service and Terraform state files.
+9. Migrated SCB UAT clients to the latest V3 transfer service and Terraform state files. ✖ Missed. Should be under Deployment and Service Enhancements.
 
 
-10. Deployed an SFTP transfer server in the us-east-2 region.
+10. Deployed an SFTP transfer server in the us-east-2 region. ✔ Included under "Deployment and Service Enhancements."
 
 
-11. Set up transfer-admin-public and transfer-admin-private roles in the us-east-2 region.
+11. Set up transfer-admin-public and transfer-admin-private roles in the us-east-2 region. ✔ Included under "Deployment and Service Enhancements."
 
 
-12. Completed the deployment of the transfer service in us-east-2, integrating with XREF tables.
+12. Completed the deployment of the transfer service in us-east-2, integrating with XREF tables. ✔ Included under "Deployment and Service Enhancements."
 
 
-13. Demonstrated cloud malware integration for the transfer service.
+13. Demonstrated cloud malware integration for the transfer service. ✔ Included under "Security Enhancements."
 
 
-14. Conducted large file transfer tests using the V10 container service.
+14. Conducted large file transfer tests using the V10 container service. ✔ Included under "Deployment and Service Enhancements."
 
 
-15. Added documentation for malware integration in the transfer service.
+15. Added documentation for malware integration in the transfer service. ✔ Included under "Security Enhancements."
 
 
-16. Corrected a module for scheme server deployment.
+16. Corrected a module for scheme server deployment. ✔ Included under "Compliance and Documentation Updates."
 
 
-17. Tested and upgraded EBS volume types from gp2 to gp3 in the P-type environment.
+17. Tested and upgraded EBS volume types from gp2 to gp3 in the P-type environment. ✔ Included under "Infrastructure Optimization."
 
 
-18. Collected missing core components for the transfer service and planned normalization for all regions.
+18. Collected missing core components for the transfer service and planned normalization for all regions. ✔ Included under "Infrastructure Optimization."
 
 
-19. Resolved incidents by implementing two changes to CloudWatch alarms and admin role permissions.
+19. Resolved incidents by implementing two changes to CloudWatch alarms and admin role permissions. ✔ Included under "Incident Resolution."
 
 
-20. Cleared space on the production server to address DAG failures.
+20. Cleared space on the production server to address DAG failures. ✔ Included under "Incident Resolution."
 
 
+
+Updated Categorization:
+
+1. Automation and Infrastructure Improvements
+
+Combined two roles into a single Terraform EC2 instance automation for all regions and UAT environments.
+
+Refactored the Terraform project to separate UAT and PROD resources into two different projects.
+
+Adjusted EC2 auto-start/stop timings for EOM batches to address expected/observed delays.
+
+Tested the V3 module for transfer service deployed in SCB UAT, FRK, and Dublin regions.
+
+Set up a new transfer client with the V3 module to support any client requiring new features.
+
+Improved V3 transfer service by replacing hardcoded values with variables for better control.
+
+
+2. Deployment and Service Enhancements
+
+Decommissioned the client’s large file transfer service setup using an old version.
+
+Migrated SCB UAT clients to the latest V3 transfer service and Terraform state files.
+
+Deployed an SFTP transfer server in the us-east-2 region.
+
+Set up transfer-admin-public and transfer-admin-private roles in the us-east-2 region.
+
+Completed the deployment of the transfer service in us-east-2, integrating with XREF tables.
+
+Conducted large file transfer tests using the V10 container service.
+
+
+3. Security Enhancements
+
+Demonstrated cloud malware integration for the transfer service.
+
+Added documentation for malware integration in the transfer service.
+
+
+4. Infrastructure Optimization
+
+Tested and upgraded EBS volume types from gp2 to gp3 in the P-type environment.
+
+Collected missing core components for the transfer service and planned normalization for all regions.
+
+
+5. Compliance and Documentation Updates
+
+Released compliance updates for scheme software on UAT servers.
+
+Corrected a module for scheme server deployment.
+
+
+6. Incident Resolution
+
+Resolved incidents by implementing two changes to CloudWatch alarms and admin role permissions.
+
+Cleared space on the production server to address DAG failures.
+
+
+Let me know if this works!
 
