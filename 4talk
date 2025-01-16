@@ -1,0 +1,55 @@
+Delivery Achievements – Q4
+
+1. Terraform Refactoring and Environment Setup
+
+Consolidated multiple roles for Terraform-based EC2 instance automation, simplifying and streamlining deployment processes for all regions and UAT environments.
+
+Refactored Terraform projects to segregate UAT and PROD resources, ensuring better resource isolation and enhancing environment-specific control.
+
+Improved flexibility and control by replacing hardcoded values with variables, making infrastructure-as-code modules more scalable and reusable.
+
+
+2. Deployment and Testing of Transfer Services
+
+Deployed new SFTP transfer servers in multiple regions, including us-east-2, ensuring service availability and enhancing regional redundancy.
+
+Migrated SCB UAT clients to the latest version of the transfer service (V3 module), which introduced enhanced features and stability.
+
+Performed large file transfer tests using the latest module versions, validating scalability for file sizes beyond regular thresholds.
+
+
+3. Security Enhancements
+
+Successfully integrated GuardDuty malware protection with the transfer service, ensuring file scanning capabilities and secure operations across all deployments.
+
+Conducted a cloud demonstration of malware detection and worked on decommissioning deprecated services blocked by freeze periods.
+
+
+4. Infrastructure Optimization
+
+Upgraded EBS volumes from gp2 to gp3 in a P-type environment, validating performance improvements and understanding potential impacts for a broader rollout.
+
+Tested the EBS upgrade process thoroughly, ensuring a smooth transition for production use.
+
+
+5. Incident Resolution
+
+Resolved critical incidents, including identifying and implementing changes to CloudWatch alarms and administrative role permissions.
+
+Addressed DAG failures on production servers by clearing space and optimizing workflows, preventing operational disruptions.
+
+
+6. Documentation and Knowledge Sharing
+
+Created detailed documentation for the malware integration process, transfer services, and newly deployed modules to improve operational transparency and assist in onboarding new team members.
+
+
+7. Miscellaneous Enhancements
+
+Supported module corrections for scheme server deployments, ensuring alignment with compliance and business requirements.
+
+Collected missing core components for the transfer service layer to achieve a unified baseline for core layer deployments across regions.
+
+
+This detailed delivery section captures the scope and impact of your contributions during Q4. Let me know if you need further adjustments!
+
