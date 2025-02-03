@@ -328,5 +328,171 @@ Apply tags for resource identification and management.
 Define IAM roles with least-privileged access for:
 
 
+Ticket for POC Implementation: Bi-Directional File Transfer Workflow Using AWS SFTP Connector
+
+
+---
+
+Ticket Title:
+Implement POC for bi-directional file transfer using AWS Transfer Family SFTP Connector
+
+
+---
+
+Description:
+This task involves creating a proof of concept (POC) to demonstrate the bi-directional file transfer workflow using AWS Transfer Family with SFTP connectors. The workflow will include both inbound (pull) and outbound (push) file transfers between Amazon S3 and an external SFTP server. The goal is to validate automation, security, and scalability for the managed file transfer (MFT) solution.
+
+
+---
+
+Steps to Complete the POC
+
+1. Create AWS Transfer Family SFTP Server (Inbound Workflow)
+
+Create an SFTP endpoint using AWS Transfer Family for receiving files from external clients.
+
+Configure S3 as the storage backend for this endpoint.
+
+Define user access with SSH key-based authentication.
+
+Set up access roles and permissions for the endpoint (IAM).
+
+
+
+---
+
+2. Configure AWS Transfer Family SFTP Connector (Outbound Workflow)
+
+Configure the connector to push files to an external SFTP server.
+
+Define the remote server details, including hostname, port, and authentication requirements.
+
+Store authentication credentials (e.g., SSH keys or passwords) securely in AWS Secrets Manager.
+
+Set up logging in CloudWatch for monitoring connector operations.
+
+Apply tags for resource identification and management.
+
+
+
+---
+
+3. Create IAM Roles and Security Groups
+
+Define IAM roles with least-privileged access for:
+
+AWS Transfer Family (server and connector).
+
+Lambda functions and S3 access.
+
+Secrets Manager.
+
+
+Configure security groups and NACLs for:
+
+Allowing SFTP traffic (port 22) from specific client IPs or networks.
+
+Restricting outbound traffic to the remote SFTP server.
+
+
+
+
+---
+
+4. Develop Automation Workflows
+
+Implement automation to handle file transfers:
+
+Outbound Push: Use S3 Event Notifications to trigger a Lambda function on file uploads to the OUTBOUND S3 bucket. The Lambda function should call the SFTP connector API to push the file to the external server.
+
+Inbound Pull: Use an EventBridge schedule to trigger a Lambda function periodically. The Lambda should call the SFTP connector API to pull files from the remote SFTP server and store them in S3.
+
+
+
+
+---
+
+5. Implement Logging and Monitoring
+
+Enable CloudWatch Logs and metrics for both the SFTP server and connector.
+
+Define CloudWatch alarms for critical events (e.g., failed transfers, authentication errors).
+
+Configure alert notifications using SNS or email.
+
+
+
+---
+
+6. Conduct Integration Testing
+
+Test the end-to-end workflow for both inbound and outbound scenarios.
+
+Simulate various scenarios, such as:
+
+Successful file transfers.
+
+Network interruptions and retries.
+
+Failed authentication attempts.
+
+
+Verify logs, metrics, and alert notifications in CloudWatch.
+
+
+
+---
+
+7. Document Findings and Lessons Learned
+
+Document the setup and configuration process, including:
+
+Resources created (SFTP server, connector, roles, Lambda functions).
+
+Workflow automation and integration with AWS services.
+
+Test results and observations.
+
+
+Provide recommendations for improvements and scaling.
+
+
+
+---
+
+Resources Required:
+
+Amazon S3 bucket (for storing files).
+
+AWS Transfer Family SFTP server and connector.
+
+AWS Lambda (for automation).
+
+AWS Secrets Manager (for storing credentials).
+
+CloudWatch (for logging and monitoring).
+
+
+
+---
+
+Acceptance Criteria:
+
+SFTP server and connector successfully created and operational.
+
+Both inbound and outbound file transfer workflows tested and validated.
+
+Automation, security, and monitoring fully implemented.
+
+Documentation and lessons learned completed.
+
+
+
+---
+
+This ticket should streamline the process of setting up the full bi-directional file transfer workflow for your POC. Let me know if you want to add or modify any of the tasks!
+
+
+
 
 
