@@ -274,3 +274,59 @@ Production plan completed and reviewed by stakeholders.
 
 These tickets provide a clear roadmap for the next phases of your project. Let me know if you want me to refine or expand on any specific tasks!
 
+Ticket for POC Implementation: Bi-Directional File Transfer Workflow Using AWS SFTP Connector
+
+
+---
+
+Ticket Title:
+Implement POC for bi-directional file transfer using AWS Transfer Family SFTP Connector
+
+
+---
+
+Description:
+This task involves creating a proof of concept (POC) to demonstrate the bi-directional file transfer workflow using AWS Transfer Family with SFTP connectors. The workflow will include both inbound (pull) and outbound (push) file transfers between Amazon S3 and an external SFTP server. The goal is to validate automation, security, and scalability for the managed file transfer (MFT) solution.
+
+
+---
+
+Steps to Complete the POC
+
+1. Create AWS Transfer Family SFTP Server (Inbound Workflow)
+
+Create an SFTP endpoint using AWS Transfer Family for receiving files from external clients.
+
+Configure S3 as the storage backend for this endpoint.
+
+Define user access with SSH key-based authentication.
+
+Set up access roles and permissions for the endpoint (IAM).
+
+
+
+---
+
+2. Configure AWS Transfer Family SFTP Connector (Outbound Workflow)
+
+Configure the connector to push files to an external SFTP server.
+
+Define the remote server details, including hostname, port, and authentication requirements.
+
+Store authentication credentials (e.g., SSH keys or passwords) securely in AWS Secrets Manager.
+
+Set up logging in CloudWatch for monitoring connector operations.
+
+Apply tags for resource identification and management.
+
+
+
+---
+
+3. Create IAM Roles and Security Groups
+
+Define IAM roles with least-privileged access for:
+
+
+
+
