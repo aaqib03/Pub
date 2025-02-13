@@ -1,0 +1,111 @@
+Answers to the Three Questions
+
+1️⃣ Specify how file transfers will be triggered and automated using AWS services.
+
+File transfers will be automated using AWS S3 Event Notifications, Lambda functions, and AWS Transfer Family (SFTP Connectors). The automation workflow follows these steps:
+
+1. File Upload to S3: A file is uploaded to an S3 bucket (Client Bucket).
+
+
+2. S3 Event Notification Trigger: S3 triggers an AWS Lambda function when a new file is created.
+
+
+3. File Size Stability Check (Optional): The Lambda function verifies that the file is fully written before processing.
+
+
+4. AWS SFTP Connector API Call: The Lambda function makes an API call to AWS Transfer Family (SFTP Connector) to securely transfer the file to the client’s remote SFTP server.
+
+
+5. File Transfer Execution: The SFTP Connector establishes a secure SSH connection (TCP 22) with the client’s SFTP server and transfers the file.
+
+
+6. Monitoring & Logging: AWS CloudWatch Logs and Metrics track file transfer success/failures.
+
+
+7. Error Handling & Retries: If a transfer fails, an AWS Step Function or DLQ (Dead Letter Queue) handles retries.
+
+
+
+
+---
+
+2️⃣ Define S3 Event Notifications for outbound file pushes.
+
+S3 Event Notifications will be used to trigger the Lambda function when a new file is uploaded. This can be configured with suffix filtering to ensure only fully written files are processed.
+
+Steps to configure S3 Event Notifications:
+
+1. Enable event notifications on the S3 bucket.
+
+
+2. Filter files using suffix rules (e.g., trigger only for .csv files).
+
+
+3. Invoke Lambda upon object creation (s3:ObjectCreated:*).
+
+
+4. Pass event details (bucket name, object key) to the Lambda function.
+
+
+
+Terraform Configuration Example:
+
+resource "aws_s3_bucket_notification" "s3_event_trigger" {
+  bucket = "client-bucket"
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.file_transfer_lambda.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_suffix       = ".csv"  # Ensures only fully written files trigger the event
+  }
+}
+
+
+---
+
+3️⃣ Identify Lambda functions and APIs needed to interact with external servers using SFTP connectors.
+
+The Lambda function will interact with AWS Transfer Family’s SFTP Connector via API calls.
+
+Lambda Function Responsibilities:
+
+Receive the S3 event notification.
+
+Verify file stability (optional, using s3.head_object).
+
+Call AWS Transfer SFTP Connector API to initiate the file transfer.
+
+Monitor transfer success/failure.
+
+Log results to CloudWatch.
+
+Retry on failure (via Step Functions or SQS DLQ).
+
+
+Required AWS APIs:
+
+1. Amazon S3 API (boto3) – To check file status.
+
+s3_client = boto3.client('s3')
+
+
+2. AWS Transfer API (boto3.transfer) – To call the SFTP connector.
+
+transfer_client = boto3.client('transfer')
+transfer_client.start_file_transfer(ConnectorId="connector-id", FileLocation="s3://client-bucket/file.csv")
+
+
+3. AWS CloudWatch Logs API – For logging and monitoring.
+
+logs_client = boto3.client('logs')
+logs_client.put_log_events(...)
+
+
+4. AWS Step Functions API (Optional) – If using a workflow for retries.
+
+stepfunctions_client = boto3.client('stepfunctions')
+
+
+
+Would you like a fully functional Lambda function code snippet for this workflow?
+
