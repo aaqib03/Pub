@@ -163,6 +163,73 @@ resource "aws_lambda_event_source_mapping" "lambda_sqs_trigger" {
   }
 }
 
+
+
+#dynamodb table 
+resource "aws_dynamodb_table" "sftp_client_config" {
+  name         = "SFTPClientConfiguration"
+  billing_mode = "PAY_PER_REQUEST"  # On-demand pricing, scales automatically
+
+  # Primary Key
+  hash_key = "client_id"
+
+  attribute {
+    name = "client_id"
+    type = "S"
+  }
+
+  # TTL for automatic cleanup (Optional)
+  time_to_live {
+    attribute_name = "ttl"
+    enabled        = false
+  }
+
+  # Enable Point-in-Time Recovery for data safety (Optional)
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  # Tags for organization
+  tags = {
+    Name        = "SFTPClientConfiguration"
+    Environment = "Production"
+  }
+}
+
+# Output the table name for reference
+output "dynamodb_table_name" {
+  value = aws_dynamodb_table.sftp_client_config.name
+}
+
+
+{
+  "client_id": "partner_ABC",
+  "sftp_server": "sftp.partner-abc.com",
+  "sftp_username": "partneruser",
+  "sftp_port": 22,
+  "sftp_remote_path": "/upload/",
+  "use_pgp_encryption": false,
+  "retry_attempts": 3,
+  "notification_email": "admin@partner-abc.com"
+}
+
+
+Attribute Name	Data Type	Purpose
+client_id (Primary Key)	String	Unique identifier for each client.
+sftp_server	String	Remote SFTP endpoint URL.
+sftp_username	String	Username for authentication.
+sftp_port	Number	Port (default: 22).
+sftp_remote_path	String	Remote folder path for file uploads.
+use_pgp_encryption	Boolean	Whether encryption is required before transfer.
+pgp_public_key	String (Optional)	PGP Key (if encryption is required).
+retry_attempts	Number	Maximum retries before failure.
+notification_email	String	Admin email for transfer notifications.
+
+ How Lambda Will Use This Table
+When a file is uploaded, Lambda will query DynamoDB using client_id.
+It will fetch SFTP connection details dynamically.
+Then, it will call AWS SFTP Connector with these parameters.
+
 ######################################################################
 # Output Variables to Display Created Resources
 ######################################################################
