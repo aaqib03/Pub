@@ -1,0 +1,71 @@
+{
+    "Comment": "SFTP File Transfer Workflow",
+    "StartAt": "Retrieve SFTP Details",
+    "States": {
+      "Retrieve SFTP Details": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:::invoke",
+        "Parameters": {
+          "FunctionName": "FetchSFTPDetailsLambda"
+        },
+        "Next": "Fetch SSH Keys"
+      },
+      "Fetch SSH Keys": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:::invoke",
+        "Parameters": {
+          "FunctionName": "FetchSSHKeysLambda"
+        },
+        "Next": "Initiate SFTP Transfer"
+      },
+      "Initiate SFTP Transfer": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:::invoke",
+        "Parameters": {
+          "FunctionName": "InitiateSFTPTransferLambda"
+        },
+        "Next": "Monitor Transfer Status"
+      },
+      "Monitor Transfer Status": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:::invoke",
+        "Parameters": {
+          "FunctionName": "MonitorTransferStatusLambda"
+        },
+        "Next": "Evaluate Transfer Status"
+      },
+      "Evaluate Transfer Status": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.transfer_status",
+            "StringEquals": "COMPLETED",
+            "Next": "Delete Original File"
+          },
+          {
+            "Variable": "$.transfer_status",
+            "StringEquals": "FAILED",
+            "Next": "Send Failure Notification"
+          }
+        ]
+      },
+      "Delete Original File": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:::invoke",
+        "Parameters": {
+          "FunctionName": "DeleteFileLambda"
+        },
+        "End": true
+      },
+      "Send Failure Notification": {
+        "Type": "Task",
+        "Resource": "arn:aws:sns:::publish",
+        "Parameters": {
+          "TopicArn": "arn:aws:sns:your-region:your-account-id:transfer-failure-alerts",
+          "Message": "SFTP Transfer Failed"
+        },
+        "End": true
+      }
+    }
+  }
+  
