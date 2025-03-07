@@ -14,6 +14,17 @@ provider "aws" {
 # ---------------------------------------------
 # EventBridge Rule to Trigger Step Function
 # ---------------------------------------------
+
+resource "aws_s3_bucket_notification" "s3_outbound_notification" {
+  bucket = "your-existing-client-bucket"
+
+  eventbridge {
+    event_bridge_enabled = true
+  }
+}
+
+
+
 resource "aws_cloudwatch_event_rule" "s3_upload_rule" {
   name        = "S3FileUploadRule"
   description = "Trigger Step Function on file upload in OUTBOUND folder"
