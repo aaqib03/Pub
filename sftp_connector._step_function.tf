@@ -16,13 +16,19 @@ provider "aws" {
 # ---------------------------------------------
 resource "aws_cloudwatch_event_rule" "s3_upload_rule" {
   name        = "S3FileUploadRule"
-  description = "Trigger Step Function on S3 file upload"
+  description = "Trigger Step Function on file upload in OUTBOUND folder"
+  
   event_pattern = jsonencode({
     "source": ["aws.s3"],
     "detail-type": ["Object Created"],
     "detail": {
       "bucket": {
         "name": ["your-existing-client-bucket"]
+      },
+      "object": {
+        "key": [{
+          "prefix": "OUTBOUND/"
+        }]
       }
     }
   })
