@@ -1,71 +1,91 @@
 {
-    "Comment": "SFTP File Transfer Workflow",
-    "StartAt": "Retrieve SFTP Details",
-    "States": {
-      "Retrieve SFTP Details": {
-        "Type": "Task",
-        "Resource": "arn:aws:lambda:::invoke",
-        "Parameters": {
-          "FunctionName": "FetchSFTPDetailsLambda"
-        },
-        "Next": "Fetch SSH Keys"
-      },
-      "Fetch SSH Keys": {
-        "Type": "Task",
-        "Resource": "arn:aws:lambda:::invoke",
-        "Parameters": {
-          "FunctionName": "FetchSSHKeysLambda"
-        },
-        "Next": "Initiate SFTP Transfer"
-      },
-      "Initiate SFTP Transfer": {
-        "Type": "Task",
-        "Resource": "arn:aws:lambda:::invoke",
-        "Parameters": {
-          "FunctionName": "InitiateSFTPTransferLambda"
-        },
-        "Next": "Monitor Transfer Status"
-      },
-      "Monitor Transfer Status": {
-        "Type": "Task",
-        "Resource": "arn:aws:lambda:::invoke",
-        "Parameters": {
-          "FunctionName": "MonitorTransferStatusLambda"
-        },
-        "Next": "Evaluate Transfer Status"
-      },
-      "Evaluate Transfer Status": {
-        "Type": "Choice",
-        "Choices": [
-          {
-            "Variable": "$.transfer_status",
-            "StringEquals": "COMPLETED",
-            "Next": "Delete Original File"
-          },
-          {
-            "Variable": "$.transfer_status",
-            "StringEquals": "FAILED",
-            "Next": "Send Failure Notification"
+  "Comment": "SFTP File Transfer Workflow",
+  "StartAt": "Fetch SFTP Details",
+  "States": {
+    "Fetch SFTP Details": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:getItem",
+      "Parameters": {
+        "TableName": "SFTPConnections",
+        "Key": {
+          "ConnectorID": {
+            "S.$": "$.detail.object.key"
           }
-        ]
+        }
       },
-      "Delete Original File": {
-        "Type": "Task",
-        "Resource": "arn:aws:lambda:::invoke",
-        "Parameters": {
-          "FunctionName": "DeleteFileLambda"
-        },
-        "End": true
+      "ResultPath": "$.SFTPDetails",
+      "Next": "Prepare File Transfer Input"
+    },
+    "Prepare File Transfer Input": {
+      "Type": "Pass",
+      "Parameters": {
+        "ConnectorID.$": "$.SFTPDetails.Item.ConnectorID.S",
+        "DestinationPath.$": "$.SFTPDetails.Item.DestinationPath.S",
+        "SFTPUsername.$": "$.SFTPDetails.Item.SFTPUser.S",
+        "Bucket.$": "$.detail.bucket.name",
+        "FileKey.$": "$.detail.object.key"
       },
-      "Send Failure Notification": {
-        "Type": "Task",
-        "Resource": "arn:aws:sns:::publish",
-        "Parameters": {
-          "TopicArn": "arn:aws:sns:your-region:your-account-id:transfer-failure-alerts",
-          "Message": "SFTP Transfer Failed"
-        },
-        "End": true
-      }
+      "ResultPath": "$.TransferDetails",
+      "Next": "Initiate SFTP Transfer"
+    },
+    "Initiate SFTP Transfer": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:transfer:startFileTransfer",
+      "Parameters": {
+        "ConnectorId.$": "$.TransferDetails.ConnectorID",
+        "SendFilePaths": [
+          {
+            "S3Bucket.$": "$.TransferDetails.Bucket",
+            "S3Key.$": "$.TransferDetails.FileKey"
+          }
+        ],
+        "DestinationPath.$": "$.TransferDetails.DestinationPath"
+      },
+      "ResultPath": "$.TransferResponse",
+      "Next": "Monitor Transfer Status"
+    },
+    "Monitor Transfer Status": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:transfer:describeFileTransfer",
+      "Parameters": {
+        "ConnectorId.$": "$.TransferDetails.ConnectorID",
+        "TransferId.$": "$.TransferResponse.TransferId"
+      },
+      "ResultPath": "$.TransferStatus",
+      "Next": "Evaluate Transfer Status"
+    },
+    "Evaluate Transfer Status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.TransferStatus.Status",
+          "StringEquals": "COMPLETED",
+          "Next": "Delete Original File"
+        }
+      ],
+      "Default": "Send Failure Notification"
+    },
+    "Delete Original File": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:s3:deleteObject",
+      "Parameters": {
+        "Bucket.$": "$.TransferDetails.Bucket",
+        "Key.$": "$.TransferDetails.FileKey"
+      },
+      "ResultPath": "$.DeleteResponse",
+      "Next": "EndState"
+    },
+    "Send Failure Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "Message": "File transfer failed for file: $.TransferDetails.FileKey",
+        "TopicArn": "arn:aws:sns:your-region:your-account-id:failure-notifications"
+      },
+      "Next": "EndState"
+    },
+    "EndState": {
+      "Type": "Succeed"
     }
   }
-  
+}
