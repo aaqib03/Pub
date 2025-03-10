@@ -101,3 +101,20 @@
     }
   }
 }
+
+
+
+"Send Failure Notification": {
+  "Type": "Task",
+  "Resource": "arn:aws:states:::sns:publish",
+  "Parameters": {
+    "TopicArn": "arn:aws:sns:eu-central-1:175565783406:transfer-failure-alerts",
+    "Message.$": "States.Format('Step Function Execution: {}\\nFailed Step: {}\\nBucket Name: {}\\nFile Key: {}\\nError Message: {}',
+      $$Execution.Id,
+      $$State.Name,
+      $.bucket_name,
+      $.file_key,
+      $.Error.Message)"
+  },
+  "End": true
+}
