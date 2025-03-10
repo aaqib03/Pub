@@ -118,3 +118,41 @@
   },
   "End": true
 }
+
+
+
+import json
+import logging
+import boto3
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+s3 = boto3.client('s3')
+
+def lambda_handler(event, context):
+    bucket_name = event.get("bucket_name", "NO_BUCKET_NAME")
+    file_key = event.get("file_key", "path/to/somefile.txt")
+
+    logger.info(f"Request to delete file '{file_key}' from bucket '{bucket_name}'")
+
+    try:
+        s3.delete_object(Bucket=bucket_name, Key=file_key)
+        logger.info(f"Successfully deleted '{file_key}' from '{bucket_name}'")
+
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": f"Deleted {file_key} from {bucket_name}"
+            })
+        }
+
+    except Exception as e:
+        error_message = f"Failed to delete '{file_key}' from '{bucket_name}': {str(e)}"
+        logger.error(error_message)
+
+        return {
+            "statusCode": 500,
+            "error": error_message,
+            "bucket_name": bucket_name,
+            "file_key": file_key
+        }
