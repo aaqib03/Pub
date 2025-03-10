@@ -50,3 +50,54 @@ def lambda_handler(event, context):
 
         # Raise an exception to fail the step function execution
         raise Exception(error_message)
+
+
+
+{
+  "Comment": "SFTP File Transfer Workflow",
+  "StartAt": "Retrieve SFTP Details",
+  "States": {
+    "Retrieve SFTP Details": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:FetchSFTPDetailsLambda",
+      "Next": "Initiate SFTP Transfer"
+    },
+    "Initiate SFTP Transfer": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:InitiateSFTPTransferLambda",
+      "Next": "Monitor Transfer Status"
+    },
+    "Monitor Transfer Status": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:MonitorTransferStatusLambda",
+      "Next": "Delete Original File"
+    },
+    "Delete Original File": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:DeleteFileLambda",
+      "Parameters": {
+        "bucket_name.$": "$.bucket_name",
+        "file_key.$": "$.file_key"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "Next": "Send Failure Notification"
+        }
+      ],
+      "Next": "SuccessState"
+    },
+    "Send Failure Notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:FailureNotificationLambda",
+      "Next": "FailState"
+    },
+    "SuccessState": {
+      "Type": "Succeed"
+    },
+    "FailState": {
+      "Type": "Fail",
+      "Cause": "File deletion failed."
+    }
+  }
+}
