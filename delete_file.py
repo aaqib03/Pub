@@ -156,3 +156,38 @@ def lambda_handler(event, context):
             "bucket_name": bucket_name,
             "file_key": file_key
         }
+
+
+
+
+"Delete Original File": {
+    "Type": "Task",
+    "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:DeleteFileLambda",
+    "Parameters": {
+        "bucket_name.$": "$.bucket_name",
+        "file_key.$": "$.file_key"
+    },
+    "Catch": [
+        {
+            "ErrorEquals": ["States.TaskFailed"],
+            "ResultPath": "$.DeleteError",
+            "Next": "Send Failure Notification"
+        }
+    ],
+    "End": true
+},
+
+"Send Failure Notification": {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::sns:publish",
+    "Parameters": {
+        "TopicArn": "arn:aws:sns:eu-central-1:175565783406:transfer-failure-alerts",
+        "Message": {
+            "Transfer ID": "$.transfer_id",
+            "Bucket Name": "$.bucket_name",
+            "File Key": "$.file_key",
+            "Error Message": "$.DeleteError.error"
+        }
+    },
+    "End": true
+}
