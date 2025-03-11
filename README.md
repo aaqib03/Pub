@@ -1,156 +1,128 @@
-# SFTP Push File Transfer Deployment & Implementation Guide
-
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Pre-requisites](#pre-requisites)
-3. [Deployment Architecture](#deployment-architecture)
-4. [Step-by-Step Deployment Using Terraform](#step-by-step-deployment-using-terraform)
-5. [Post-Deployment Validation](#post-deployment-validation)
-6. [Failure Handling & Retry Mechanism](#failure-handling--retry-mechanism)
-7. [Troubleshooting & Debugging](#troubleshooting--debugging)
-8. [Rollback Plan](#rollback-plan)
-9. [Conclusion](#conclusion)
+# **Solution Design Document: SFTP File Transfer Workflow using AWS Step Functions**
 
 ---
 
-## 1. Introduction
-### **Purpose**
-This document provides a step-by-step guide to deploying the **SFTP Push File Transfer Solution** using **Terraform**. It explains the **infrastructure setup**, components, dependencies, and the required AWS services.
-
-### **Scope**
-- **Deployment of AWS Transfer Family SFTP Server** to mimic the client's remote SFTP.
-- **Infrastructure automation using Terraform**.
-- **Creation of required AWS resources (S3, SQS, Lambda, IAM, CloudWatch, Secrets Manager).**
-- **Handling security configurations and role-based access.**
+## **1. Introduction**
+This document provides a detailed solution design for the **SFTP File Transfer Workflow** implemented using **AWS Step Functions**, **Lambda**, **DynamoDB**, **SNS**, and **S3**. It outlines the architecture, functionality, security model, failure handling, and future improvements.
 
 ---
 
-## 2. Pre-requisites
-### **AWS Services & Permissions Required**
-| Service | Purpose |
-|---------|---------|
-| **S3 (Client Bucket)** | Stores files before transfer to SFTP. **Already in place**. |
-| **AWS Transfer Family (SFTP Server)** | Acts as a mock remote SFTP server. |
-| **AWS SQS FIFO Queue** | Ensures **sequential** processing of file transfers. |
-| **AWS Lambda** | Orchestrates file movement from S3 to SFTP. |
-| **AWS Step Functions** | Manages retries and ensures robust workflow execution. |
-| **AWS Secrets Manager** | Securely stores SFTP credentials. |
-| **Amazon EventBridge** | Triggers Lambda when a new file is uploaded to S3. |
-| **CloudWatch** | Logs file transfer activities and errors. |
-
-### **Required Tools**
-- **AWS CLI** installed and configured.
-- **Terraform installed (>=1.0).**
-- **Access to AWS account with permissions to create resources.**
+## **2. Overview**
+The SFTP File Transfer Workflow is designed to automate file transfers from an **Amazon S3 bucket** to an **SFTP destination** using AWS Transfer Family. The workflow ensures:
+- Secure **event-driven execution** triggered by file uploads.
+- **Automated retrieval of SFTP details** from **DynamoDB**.
+- **File transfer monitoring** and **failure handling** via AWS Step Functions.
+- **Robust error notifications** using **Amazon SNS**.
 
 ---
 
-## 3. Deployment Architecture
-```mermaid
-graph TD;
-    A[S3 Client Bucket] -->|New File Uploaded| B[EventBridge Rule]
-    B -->|Triggers| C[SQS FIFO Queue]
-    C -->|Ensures Order| D[Step Functions]
-    D -->|Manages Retries| E[Lambda Function]
-    E -->|Fetches File| F[AWS Transfer Family SFTP Server]
-    F -->|Secure Transfer| G[Remote SFTP Server]
-    E -->|Logs Status| H[CloudWatch Logs]
-    E -->|Error Handling| I[Move to DLQ on Failure]
-```
-### **Workflow Summary:**
-1️⃣ **New file upload to S3 Client Bucket** triggers **EventBridge Rule**.  
-2️⃣ **EventBridge** sends file metadata to **SQS FIFO** for sequential processing.  
-3️⃣ **Step Functions manages retries** and ensures error handling.
-4️⃣ **Lambda reads file from SQS**, fetches credentials from **Secrets Manager**, and initiates **SFTP transfer**.  
-5️⃣ **AWS Transfer Family SFTP Server** handles the secure file transfer to **remote SFTP**.  
-6️⃣ **CloudWatch logs transfer success or failure**.  
-7️⃣ **Failed transfers go to DLQ, retry mechanism applies**.
+## **3. Architecture Diagram**
+*(You can create a diagram using tools like Draw.io, Lucidchart, or Mermaid.js.)*
+
+### **3.1 Components & Purpose**
+
+| **Component**  | **Purpose** |
+|--------------|------------|
+| **Amazon S3** | Source bucket for file uploads (OUTBOUND folder monitored via EventBridge) |
+| **EventBridge** | Detects new file uploads and triggers Step Functions |
+| **AWS Step Functions** | Orchestrates the workflow for fetching details, initiating transfer, monitoring status, and handling failures |
+| **AWS Lambda Functions** | Performs business logic at each step (retrieving details, initiating transfer, monitoring status, deleting files) |
+| **AWS Transfer Family (SFTP Connector)** | Transfers files from S3 to the configured SFTP destination |
+| **Amazon DynamoDB** | Stores metadata (SFTP credentials, connection IDs, destinations) |
+| **Amazon SNS** | Sends failure notifications to teams via email |
+| **IAM Roles & Policies** | Ensures secure access between services |
 
 ---
 
-## 4. Step-by-Step Deployment Using Terraform
-### **Step 1: Define AWS Provider in Terraform**
-```hcl
-provider "aws" {
-  region = "us-east-1"
-}
-```
+## **4. Detailed Workflow**
+### **Step 1: File Upload & Trigger**
+- **Trigger:** A file is uploaded to the `OUTBOUND` folder in S3.
+- **EventBridge Rule:** Detects the new file and invokes **AWS Step Functions**.
 
-### **Step 2: Deploy AWS Transfer Family SFTP Server**
-```hcl
-resource "aws_transfer_server" "sftp_server" {
-  protocols = ["SFTP"]
-  endpoint_type = "PUBLIC"
-  identity_provider_type = "SERVICE_MANAGED"
-}
-```
-🔹 **Why?** This **mimics the client’s remote SFTP server** for testing and validation.
+### **Step 2: Retrieve SFTP Connection Details**
+- **Lambda:** Fetches SFTP connection details from **DynamoDB**.
+- **Output:** Returns `connector_id`, `destination_path`, `SFTP user`, and `Bucket ID`.
 
-### **Step 3: Create AWS Step Functions for Retry Logic**
-```hcl
-resource "aws_sfn_state_machine" "sftp_transfer_state_machine" {
-  name       = "SFTPTransferWorkflow"
-  role_arn   = aws_iam_role.step_functions_role.arn
-  definition = file("step_function_definition.json")
-}
-```
-🔹 **Why?** Ensures **robust retry logic and error handling** for file transfers.
+### **Step 3: Initiate SFTP File Transfer**
+- **Lambda:** Calls AWS Transfer Family API using `connector_id` to move the file to SFTP.
+- **Parameters Passed:** `bucket_name`, `file_key`, `connector_id`, `destination_path`.
+- **Output:** Generates a `transfer_id`.
 
-### **Step 4: Deploy AWS Lambda Function**
-```hcl
-resource "aws_lambda_function" "sftp_lambda" {
-  function_name = "SFTPPushLambda"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.8"
-  filename      = "lambda_function.zip"
-}
-```
-🔹 **Why?** This **Lambda handles the file transfer** process from S3 to SFTP.
+### **Step 4: Store Transfer Details & Wait for Completion**
+- **Lambda:** Stores `transfer_id` in **DynamoDB**.
+- **Wait for Transfer Completion:** The state machine waits for a signal on completion.
+
+### **Step 5: Evaluate Transfer Status**
+- **Lambda:** Queries transfer completion status.
+- **If Success:** Proceed to file deletion.
+- **If Failed:** Trigger failure notification.
+
+### **Step 6: Delete Original File from S3**
+- **Lambda:** Deletes the transferred file from S3.
+- **If Error:** Capture failure and trigger **SNS Notification**.
+
+### **Step 7: Send Failure Notification**
+- **SNS Topic:** Notifies the team via email with details of the failed step.
 
 ---
 
-## 6. Failure Handling & Retry Mechanism
-### **Using Step Functions for Retry Logic**
-- **Step Functions will:**
-  - Retry failed transfers up to **3 times**.
-  - Implement **exponential backoff** for retries.
-  - Move failed transfers to **DLQ** if all retries fail.
+## **5. Security Model**
+### **5.1 IAM Roles & Policies**
+- **Least Privilege Principle:** Each Lambda has minimal permissions.
+- **IAM Policies:**
+  - **Lambda**: Access to **S3**, **DynamoDB**, **SNS**, **Transfer API**.
+  - **Step Functions**: Invoke Lambda, write logs.
+  - **SNS**: Allow publish permissions to Step Functions.
 
-```json
-{
-  "StartAt": "TransferFile",
-  "States": {
-    "TransferFile": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:::function:SFTPPushLambda",
-      "Retry": [{
-        "ErrorEquals": ["SFTPTransferError"],
-        "IntervalSeconds": 5,
-        "MaxAttempts": 3,
-        "BackoffRate": 2.0
-      }],
-      "Catch": [{
-        "ErrorEquals": ["States.ALL"],
-        "Next": "MoveToDLQ"
-      }],
-      "End": true
-    },
-    "MoveToDLQ": {
-      "Type": "Fail"
-    }
-  }
-}
-```
+### **5.2 Data Protection**
+- **S3 KMS Encryption**: Protects files at rest.
+- **IAM Role Assumption**: Ensures only authorized services access SFTP credentials.
+- **DynamoDB Encryption**: Protects stored SFTP metadata.
 
-🔹 **Why?** Step Functions ensure **reliable, automated retries** without manual intervention.
+### **5.3 Audit & Monitoring**
+- **CloudTrail Logs:** Monitors access to AWS services.
+- **CloudWatch Logs:** Captures execution details, errors, and performance logs.
 
 ---
 
-## 9. Conclusion
-This document ensures a **secure, automated deployment** of the **SFTP Push File Transfer system**. By integrating **Step Functions**, we enhance **reliability, scalability, and failure handling**.
+## **6. Stability Considerations**
+- **Scalability:** Handles multiple files using parallel Step Function executions.
+- **Concurrency:** AWS Step Functions ensures parallel execution without conflicts.
+- **Execution Timeout:** Defined at the step level to prevent stuck executions.
+- **Error Logging:** All failures are captured in **CloudWatch Logs** for debugging.
 
 ---
 
-**Next Steps:** Would you like a **detailed test plan document? 🚀**
+## **7. Failure Handling & Retries**
 
+| **Step**  | **Failure Scenario** | **Current Handling** | **Future Improvements** |
+|-----------|---------------------|----------------------|-------------------------|
+| **Retrieve SFTP Details** | DynamoDB timeout/error | Retry mechanism using Step Functions built-in retry | Add a fallback to default credentials |
+| **Initiate SFTP Transfer** | Invalid SFTP credentials | Log failure and trigger SNS alert | Implement a second SFTP retry |
+| **Monitor Transfer Status** | API timeout | Retry for a defined period | Implement a dead-letter queue (DLQ) |
+| **Delete Original File** | IAM permission denied | Log failure and trigger SNS alert | Implement IAM validation before deletion |
+
+---
+
+## **8. Assumptions & Constraints**
+### **8.1 Assumptions**
+1. The **SFTP connector** is pre-configured with correct host key and credentials.
+2. The **DynamoDB table** stores valid `connector_id` and `destination_path`.
+3. Files **always originate from S3** before transfer.
+4. **EventBridge correctly triggers Step Functions** for each file.
+
+### **8.2 Constraints**
+1. **File Size Limitations**:
+   - AWS Lambda has a 6MB synchronous response limit.
+   - AWS Transfer API supports up to **5GB** for direct transfers.
+   
+2. **Execution Time Limits**:
+   - Step Functions **Standard Workflow** is used to support long-running jobs.
+   
+3. **Error Handling Dependencies**:
+   - If AWS Transfer API fails, the system currently **does not retry automatically**.
+
+---
+
+## **9. Future Enhancements**
+### **9.1 Implementing Automated
