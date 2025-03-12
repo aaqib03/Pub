@@ -1,37 +1,45 @@
-# Top Questions to Ask My Manager on Today's Call
+# Comparison: Lambda-Based vs Step Function-Based Approach
 
-## 1. Performance & Goal Alignment
-- **How do my current goals align with the business priorities for 2025?**
-- **Are my goals SMART (Specific, Measurable, Achievable, Relevant, Time-bound) enough?**
-- **Can you provide feedback on whether I am on track or off track in achieving my goals?**
-- **What metrics or key performance indicators (KPIs) will be used to evaluate my success?**
+## Table of Contents
+1. [Comparison Table](#comparison-table)
+2. [When to Use Each Approach](#when-to-use-each-approach)
+3. [Next Steps](#next-steps)
 
-## 2. Feedback & Development
-- **What are the key strengths you’ve observed in my performance so far?**
-- **Are there any specific areas where I need improvement?**
-- **What skills should I focus on developing to contribute more effectively to the team?**
-- **How can I leverage the company’s learning and performance resources to grow?**
-- **Are there any upcoming projects or responsibilities where I can gain more experience?**
+## Comparison Table
 
-## 3. Four Talks & Rating Process
-- **How do you see my performance fitting into the new rating scale?**
-- **How will the “On Track” vs. “Off Track” status impact my career growth?**
-- **If I’m rated “Off Track” in any area, what steps should I take to improve?**
-- **What additional support or resources can I access to meet expectations?**
+| #  | Criteria               | Lambda-Based Approach                           | Step Function-Based Approach                     |
+|----|------------------------|------------------------------------------------|------------------------------------------------|
+| 1  | **Performance**        | Low latency, real-time processing | Higher latency due to step execution overhead |
+| 2  | **Volume Handling**    | Handles moderate to high file volume | Can handle large file volume but with execution overhead |
+| 3  | **Concurrency**        | Limited concurrency (1000 per account by default) | Built-in parallelism with state tracking |
+| 4  | **Batch Processing**   | Supported via SQS batch processing | Natively supports batch and sequential execution |
+| 5  | **Large File Handling**| Files remain in S3; Lambda makes API calls | Step Functions allow orchestrated retries |
+| 6  | **Failure Handling**   | Retries needed via SQS DLQ | Built-in retries and error handling |
+| 7  | **Scalability**        | Scales automatically, but concurrency limits apply | High scalability with controlled execution |
+| 8  | **Cost Efficiency**    | High execution cost for high volume | Pay per step, better for long workflows |
+| 9  | **Ease of Maintenance**| Easier to deploy but requires external monitoring | Provides built-in state tracking and logs |
+| 10 | **Security**           | IAM roles restrict API calls | IAM roles control execution at each step |
 
-## 4. Leadership & Company Strategy
-- **Can you provide more insight into how our team’s work contributes to the company’s seven strategic priorities?**
-- **What are the biggest challenges facing our team this year, and how can I help?**
-- **How do you see my role evolving over the next year?**
-- **What opportunities exist for cross-functional collaboration or exposure to other teams?**
+---
 
-## 5. Career Progression & Next Steps
-- **What steps should I take to position myself for future growth within the company?**
-- **Are there leadership opportunities or mentorship programs I should consider?**
-- **How do you see my potential for a promotion or increased responsibilities in the next review cycle?**
-- **Can we set up a follow-up discussion to review my progress in a few months?**
+## When to Use Each Approach
 
-## 6. Company Values & Culture
-- **How can I better integrate company values into my daily work and decision-making?**
-- **Are there any specific behaviors or leadership qualities you’d like me to demonstrate more?**
-- **How does our team contribute to maintaining and improving company culture?**
+### ✅ Use the **Lambda-Based Approach** when:
+- **High-volume, real-time processing** is required.
+- **Parallel execution and batch processing via SQS** is needed.
+- **Low-latency, event-driven execution** is a priority.
+- You want **direct API calls** without overhead from Step Functions.
+
+### ✅ Use the **Step Function-Based Approach** when:
+- **Orchestrated workflows with strict execution order** are needed.
+- **File transfer state tracking and visibility** is a key requirement.
+- You need **built-in retries, error handling, and monitoring**.
+- **Batch processing with sequential steps** (encryption, logging) is required.
+
+---
+
+## Next Steps
+- If **real-time, scalable processing** is needed → **Deploy Lambda + SQS**.
+- If **controlled execution and logging visibility** are key → **Use Step Functions**.
+
+This document provides a **clear comparison** for selecting the right architecture based on different scenarios. 🚀
