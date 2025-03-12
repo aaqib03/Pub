@@ -1,0 +1,89 @@
+Here is an updated and refined comparison considering the points you raised, formatted as a Markdown document for easy reference.
+
+
+---
+
+Comparison of Lambda-Based vs. Step Function-Based SFTP Transfer Architectures
+
+Table of Contents
+
+1. Introduction
+
+
+2. Comparison Table
+
+
+3. Analysis & Recommendations
+
+
+4. Conclusion
+
+
+
+
+---
+
+Introduction
+
+This document compares two architectures for transferring files to a remote SFTP server:
+
+1. Lambda-Based Approach: Uses AWS Lambda to initiate API calls to the AWS SFTP Connector.
+
+
+2. Step Function-Based Approach: Uses AWS Step Functions to orchestrate Lambda executions and retries systematically.
+
+
+
+We evaluate performance, batch processing, failure handling, monitoring, and scalability to help determine the best approach.
+
+
+---
+
+Comparison Table
+
+
+---
+
+Analysis & Recommendations
+
+Use the Lambda-Based Approach when:
+
+✅ High-volume, real-time processing is required.
+✅ Parallel execution and batch processing via SQS is needed.
+✅ Low-latency, event-driven execution is a priority.
+✅ You want direct API calls without overhead from Step Functions.
+
+Use the Step Function-Based Approach when:
+
+✅ Orchestrated workflows with strict execution order are needed.
+✅ File transfer state tracking and visibility is a key requirement.
+✅ You need built-in retries, error handling, and monitoring.
+✅ Batch processing with sequential steps (encryption, logging) is required.
+
+
+---
+
+Conclusion
+
+Both architectures are scalable and reliable, but they serve different needs:
+
+For high-throughput, batch processing with automatic retries → Lambda + SQS is the best choice.
+
+For structured workflows requiring strict execution sequencing and monitoring → Step Functions are better.
+
+
+
+---
+
+Next Steps
+
+If real-time, scalable processing is needed → Deploy Lambda + SQS.
+
+If controlled execution and logging visibility are key → Use Step Functions.
+
+
+
+---
+
+This document provides a clear comparison for selecting the right architecture for different scenarios. 🚀 Let me know if you need refinements!
+
