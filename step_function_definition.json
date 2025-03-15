@@ -1,50 +1,139 @@
 {
   "Comment": "SFTP File Transfer Workflow",
-  "StartAt": "Retrieve SFTP Details",
+  "StartAt": "Transform Input Message",
   "States": {
+    "Transform Input Message": {
+      "Type": "Pass",
+      "Next": "Retrieve SFTP Details",
+      "Parameters": {
+        "bucket.$": "$.detail.bucket.name",
+        "key.$": "$.detail.object.key",
+        "size.$": "$.detail.object.size",
+        "version_id.$": "$.detail.object.version-id",
+        "connection_detail_table": "SFTPConnectionsDetailTable",
+        "transfer_status_table": "SFTPTransferStatusTable",
+        "execution_arn.$": "$$.Execution.Id"
+      },
+      "OutputPath": "$.Event"
+    },
     "Retrieve SFTP Details": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:FetchSFTPDetailsLambda",
-      "Next": "Fetch SSH Keys"
-    },
-    "Fetch SSH Keys": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:FetchSSHKeysLambda",
-      "Next": "Initiate SFTP Transfer"
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:query",
+      "Parameters": {
+        "TableName.$": "$.connection_detail_table",
+        "KeyConditionExpression": "BucketID = :bucket",
+        "ExpressionAttributeValues": {
+          ":bucket": { "S.$": "$.bucket" }
+        }
+      },
+      "ResultPath": "$.RetrieveSFTPOutput",
+      "Next": "Initiate SFTP Transfer",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.failureError",
+          "Next": "Send Failure Notification"
+        }
+      ]
     },
     "Initiate SFTP Transfer": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:InitiateSFTPTransferLambda",
-      "Next": "Monitor Transfer Status"
+      "Resource": "arn:aws:states:::aws-sdk:transfer:startFileTransfer",
+      "Parameters": {
+        "ConnectorId.$": "$.RetrieveSFTPOutput.Items[0].ConnectorId.S",
+        "SendFilePaths.$": "States.Array(States.Format('{}/{}', $.RetrieveSFTPOutput.Items[0].BucketID.S, $.key))"
+      },
+      "ResultSelector": {
+        "TransferId.$": "$.TransferId"
+      },
+      "ResultPath": "$.InitiateSFTPTransferOutput",
+      "Next": "Store Transfer Details",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.failureError",
+          "Next": "Send Failure Notification"
+        }
+      ]
     },
-    "Monitor Transfer Status": {
+    "Store Transfer Details": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:MonitorTransferStatusLambda",
-      "Next": "Evaluate Transfer Status"
+      "Resource": "arn:aws:states:::aws-sdk:dynamodb:putItem.waitForTaskToken",
+      "TimeoutSeconds": 300,
+      "Parameters": {
+        "TableName.$": "$.transfer_status_table",
+        "Item": {
+          "TaskToken": { "S.$": "$$.Task.Token" },
+          "Execution_ARN": { "S.$": "$.execution_arn" },
+          "TransferId": { "S.$": "$.InitiateSFTPTransferOutput.TransferId" },
+          "SourceBucket": { "S.$": "$.bucket" },
+          "Key": { "S.$": "$.key" },
+          "Start_Time": { "S.$": "$.time" },
+          "ConnectorId": { "S.$": "$.RetrieveSFTPOutput.Items[0].ConnectorId.S" },
+          "DestinationPath": { "S.$": "$.RetrieveSFTPOutput.Items[0].DestinationPath.S" }
+        }
+      },
+      "ResultPath": "$.StoreTransferResult",
+      "Next": "WaitForTransferStatus",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.failureError",
+          "Next": "Send Failure Notification"
+        }
+      ]
     },
-    "Evaluate Transfer Status": {
+    "WaitForTransferStatus": {
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.TransferStatus",
+          "Variable": "$.StoreTransferResult.transfer_status",
           "StringEquals": "COMPLETED",
           "Next": "Delete Original File"
+        },
+        {
+          "Variable": "$.StoreTransferResult.transfer_status",
+          "StringEquals": "FAILED",
+          "Next": "Send Failure Notification"
         }
       ],
       "Default": "Send Failure Notification"
     },
     "Delete Original File": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:DeleteFileLambda",
-      "Next": "EndState"
+      "Resource": "arn:aws:states:::aws-sdk:s3:deleteObject",
+      "Parameters": {
+        "Bucket.$": "$.bucket",
+        "Key.$": "$.key"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.failureError",
+          "Next": "Send Failure Notification"
+        }
+      ],
+      "End": true
     },
     "Send Failure Notification": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:eu-central-1:175565783406:function:FailureNotificationLambda",
-      "Next": "EndState"
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:eu-central-1:175565783406:connector-transfer-failure-alerts",
+        "Message.$": "States.Format('Step Function Failure Alert:\\n\\nStep Failed: {}\\nExecution ID: {}\\nError Message: {}\\nBucket Name: {}\\nFile Key: {}\\nTransfer Status: {}', \
+            $.failureError.Cause.StepName, \
+            $.execution_arn, \
+            $.failureError.Cause.errorMessage, \
+            $.bucket, \
+            $.key, \
+            $.StoreTransferResult.transfer_status)"
+      },
+      "Next": "Force Fail"
     },
-    "EndState": {
-      "Type": "Succeed"
+    "Force Fail": {
+      "Type": "Fail",
+      "Error": "StepFunctionFailed",
+      "Cause": "A step in SF has failed"
     }
   }
 }
