@@ -1,63 +1,104 @@
-Here is the AWS CloudWatch Logs Insights queries in markdown format:
+Based on your requirement to extract file name, transfer status, and file size, and considering the issue in your query where fields were not extracted correctly, here are the refined queries:
 
-# AWS CloudWatch Logs Insights Queries
 
-## 1. Basic Query to Extract All Fields from the Log Message
-```sql
+---
+
+1. Extract Fields Using JSON Parsing
+
 fields @timestamp, @message
-| sort @timestamp desc
-| limit 20
-
-2. Extracting Specific Fields Directly from JSON Formatted Logs
-
-fields @timestamp, @message, bytes
 | parse_json(@message) as log_data
-| display log_data.status-code, log_data.file-path, log_data.bytes
+| display log_data["file-path"], log_data["status-code"], log_data["bytes"]
 | sort @timestamp desc
 | limit 20
 
-3. Parsing Structured JSON Fields Explicitly
+✅ Why?
 
-fields @timestamp, @message, bytes
-| parse @message '"status-code":"*","file-path":"*","bytes":*' as status_code, file_path, bytes
+This extracts file-path (file name), status-code (transfer status), and bytes (file size) directly.
+
+
+
+---
+
+2. Explicitly Parse JSON Fields from Message
+
+fields @timestamp, @message
+| parse @message '"file-path":"*","status-code":"*","bytes":*' as file_path, status_code, file_size
 | sort @timestamp desc
 | limit 20
 
-4. Extracting Relevant Fields Using Multiple Parsing Methods
+✅ Why?
 
-fields @timestamp, @message, bytes
-| parse @message '"status-code": *' as status_code
-| parse @message '"file-path": "*"' as file_path
-| parse @message '"bytes": *' as bytes
+Useful if JSON is embedded as a string inside @message.
+
+
+
+---
+
+3. Filter Logs to Show Only Successful Transfers
+
+fields @timestamp, @message
+| parse_json(@message) as log_data
+| filter log_data["status-code"] = "COMPLETED"
+| display log_data["file-path"], log_data["status-code"], log_data["bytes"]
 | sort @timestamp desc
 | limit 20
 
-5. Filtering Out Logs That Do Not Contain Relevant Data
+✅ Why?
 
-fields @timestamp, @message, status_code, file_path, bytes
-| filter ispresent(status_code) and ispresent(file_path)
+Filters logs to show only successfully transferred files.
+
+
+
+---
+
+4. Handling Variations in Field Names
+
+fields @timestamp, @message
+| parse @message '"file-path":"*","status-code":"*","bytes":*' as file_path, transfer_status, file_size
+| filter ispresent(file_path) and ispresent(transfer_status) and ispresent(file_size)
 | sort @timestamp desc
 | limit 20
 
-6. Extracting Nested Attributes from JSON Logs
+✅ Why?
+
+Ensures missing values don’t cause incomplete results.
+
+
+
+---
+
+5. Extract from Nested Logs (if applicable)
 
 fields @timestamp, bytes
 | parse_json(@message) as log_data
-| display log_data["status-code"], log_data["file-path"], log_data["bytes"]
+| display log_data.file-path, log_data.status-code, log_data.bytes
 | sort @timestamp desc
 | limit 20
 
-7. Extracting Additional Metadata from Log Attributes
+✅ Why?
 
-fields @timestamp, account-id, connector-id, transfer-id, status-code, file-path, bytes
+If file-path, status-code, and bytes are nested inside the JSON structure.
+
+
+
+---
+
+6. Display Data in a Table Format
+
+fields @timestamp, file_path, status_code, bytes
+| parse @message '"file-path":"*","status-code":"*","bytes":*' as file_path, status_code, bytes
 | sort @timestamp desc
 | limit 20
 
-8. Extracting All Possible Structured Data Including ARN and File Details
+✅ Why?
 
-fields @timestamp, account-id, connector-arn, connector-id, transfer-id, file-transfer-id, status-code, file-path, bytes
-| sort @timestamp desc
-| limit 20
+Formats extracted fields for better readability.
 
-You can copy this markdown file directly and use it in your documentation or notes. Let me know if you need any modifications! 🚀
+
+
+---
+
+📌 Next Steps
+
+Try running each query and check which one correctly extracts your file transfer details. Let me know if you need modifications! 🚀
 
