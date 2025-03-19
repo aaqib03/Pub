@@ -18,31 +18,14 @@ resource "aws_cloudwatch_dashboard" "sftp_dashboard" {
       }
     ]
   })
-}
 
 
 fields @timestamp, 
        file-path as FileName, 
        bytes as FileSize, 
        status-code as TransferStatus, 
-       start-time, 
-       end-time, 
-       (date_diff(end-time, start-time, 'millisecond') / 60000) as TimeTakenMinutes
+       parse_time(start-time) as StartTime, 
+       parse_time(end-time) as EndTime, 
+       (parse_time(end-time) - parse_time(start-time)) / 60000 as TimeTakenMinutes
 | sort @timestamp desc
 | limit 100
-
-
-
-{
-  "widgets": [
-    {
-      "type": "log",
-      "properties": {
-        "query": "fields @timestamp, file-path as FileName, bytes as FileSize, status-code as TransferStatus, start-time, end-time, (date_diff(end-time, start-time, 'millisecond') / 60000) as TimeTakenMinutes | sort @timestamp desc | limit 100",
-        "region": "eu-central-1",
-        "title": "File Transfer Logs - Last 100 Transfers",
-        "logGroupNames": ["/aws/lambda/sftp-transfer-logs"]
-      }
-    }
-  ]
-}
