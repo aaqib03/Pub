@@ -1,100 +1,21 @@
-resource "aws_cloudwatch_dashboard" "sftp_transfer_dashboard" {
+resource "aws_cloudwatch_dashboard" "sftp_dashboard" {
   dashboard_name = "SFTP-Transfer-Dashboard"
 
-  dashboard_body = <<DASHBOARD
-{
-    "widgets": [
-        {
-            "type": "metric",
-            "x": 0,
-            "y": 0,
-            "width": 12,
-            "height": 6,
-            "properties": {
-                "metrics": [
-                    ["AWS/Transfer", "SuccessfulFileTransfers", "ConnectorId", "c-b223f7ee313e426db"],
-                    ["AWS/Transfer", "FailedFileTransfers", "ConnectorId", "c-b223f7ee313e426db"]
-                ],
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "eu-central-1",
-                "title": "📊 Successful vs Failed File Transfers",
-                "period": 300,
-                "stat": "Sum"
-            }
-        },
-        {
-            "type": "metric",
-            "x": 0,
-            "y": 6,
-            "width": 12,
-            "height": 6,
-            "properties": {
-                "metrics": [
-                    ["AWS/Transfer", "FileTransferTime", "ConnectorId", "c-b223f7ee313e426db"]
-                ],
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "eu-central-1",
-                "title": "⏱ Average File Transfer Time per Connector",
-                "period": 300,
-                "stat": "Average"
-            }
-        },
-        {
-            "type": "metric",
-            "x": 12,
-            "y": 0,
-            "width": 12,
-            "height": 6,
-            "properties": {
-                "metrics": [
-                    ["AWS/Transfer", "BytesTransferred", "ConnectorId", "c-b223f7ee313e426db"]
-                ],
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "eu-central-1",
-                "title": "📦 Total Bytes Transferred Per Connector",
-                "period": 300,
-                "stat": "Sum"
-            }
-        },
-        {
-            "type": "metric",
-            "x": 12,
-            "y": 6,
-            "width": 12,
-            "height": 6,
-            "properties": {
-                "metrics": [
-                    ["AWS/Transfer", "OngoingFileTransfers", "ConnectorId", "c-b223f7ee313e426db"]
-                ],
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "eu-central-1",
-                "title": "📡 Live File Transfer Tracking",
-                "period": 300,
-                "stat": "Sum"
-            }
-        },
-        {
-            "type": "metric",
-            "x": 0,
-            "y": 12,
-            "width": 24,
-            "height": 6,
-            "properties": {
-                "metrics": [
-                    ["AWS/Transfer", "TransferErrors", "ConnectorId", "c-b223f7ee313e426db"]
-                ],
-                "view": "singleValue",
-                "region": "eu-central-1",
-                "title": "🚨 Active Transfer Errors",
-                "period": 300,
-                "stat": "Sum"
-            }
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        "type": "log",
+        "x": 0,
+        "y": 18,
+        "width": 24,
+        "height": 6,
+        "properties": {
+          "query": "SOURCE '/aws/transfer/your-log-group-name' | fields @timestamp, file-path as FileName, bytes as FileSize, status-code as TransferStatus, (end-time - start-time)/60000 as TimeTakenMinutes | sort @timestamp desc | limit 100",
+          "region": "eu-central-1",
+          "title": "📋 File Transfer Logs - Last 100 Transfers",
+          "view": "table"
         }
+      }
     ]
-}
-DASHBOARD
+  })
 }
