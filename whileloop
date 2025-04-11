@@ -1,15 +1,95 @@
-Sure, here are some key points on why you might want to upgrade from gp2 to gp3:
-
-Cost Savings: gp3 volumes are generally cheaper than gp2, helping you save on storage costs.
-
-Consistent Performance: gp3 offers a baseline of 3,000 IOPS regardless of volume size, providing more predictable performance.
-
-Configurable IOPS and Throughput: You can independently set IOPS and throughput levels to match your workload requirements without adjusting the volume size.
-
-Higher Throughput: gp3 can deliver up to 1,000 MB/s of throughput, beneficial for data-intensive applications.
-
-Flexibility: gp3 allows you to scale performance independently from storage capacity, giving you more control over your storage setup.
+Sure! Based on the resume snippet you provided, here are potential interview questions along with follow-up (counter) questions that a recruiter or technical interviewer might ask:
 
 
-Switching to gp3 can provide better performance, cost efficiency, and flexibility compared to gp2.
+---
+
+1. Experience with AWS Cloud
+
+Q: Can you describe your responsibilities in managing AWS Cloud at Tata Technologies?
+Follow-up Qs:
+
+Which AWS services have you used extensively and for what use cases?
+
+How do you ensure security and cost optimization in your AWS deployments?
+
+Have you implemented any automation or monitoring solutions for AWS infrastructure?
+
+
+
+---
+
+2. CI/CD Pipeline with GitHub Actions and ArgoCD
+
+Q: Walk me through how you set up a CI/CD pipeline using GitHub Actions and ArgoCD.
+Follow-up Qs:
+
+How do you handle secrets in your pipeline?
+
+Can you explain how ArgoCD syncs the desired state with the actual cluster state?
+
+Have you configured rollback or approval strategies in your ArgoCD workflows?
+
+
+
+---
+
+3. Infrastructure as Code (IaC) with Terraform
+
+Q: What kind of infrastructure did you provision using Terraform?
+Follow-up Qs:
+
+How do you manage Terraform state securely in a team setting?
+
+Can you explain the difference between terraform plan and terraform apply?
+
+How do you handle environment segregation (dev, staging, prod) in your Terraform setup?
+
+
+
+---
+
+4. AWS EKS Cluster Configuration
+
+Q: Tell me about your experience configuring AWS EKS clusters.
+Follow-up Qs:
+
+How did you handle node group scaling or upgrades?
+
+How do you manage networking and security for your EKS workloads (e.g., VPC CNI, IAM roles for service accounts)?
+
+Have you used tools like Helm or Kustomize with EKS?
+
+
+
+---
+
+5. Troubleshooting Containerization and Clustering Issues
+
+Q: What types of containerization or clustering issues have you encountered and resolved?
+Follow-up Qs:
+
+Have you worked with Kubernetes troubleshooting tools like kubectl describe, logs, or events?
+
+Can you give an example where a container was crashing and how you diagnosed the issue?
+
+How do you monitor the health and performance of your containerized applications?
+
+
+
+---
+
+6. Previous Experience at Wohlig Transformations
+
+Q: What were your key DevOps contributions at Wohlig Transformations?
+Follow-up Qs:
+
+What were the major differences in tooling or practices between your roles at Wohlig and Tata Technologies?
+
+Did you lead any automation or cloud migration projects?
+
+
+
+---
+
+Would you like me to structure these questions into a mock interview format or provide ideal answers as well?
 
