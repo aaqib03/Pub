@@ -1,37 +1,77 @@
-# Top Questions to Ask My Manager on Today's Call
+Absolutely! Here's a quick list of focused and practical questions you can ask on the call to clarify the scope and plan your next steps:
 
-## 1. Performance & Goal Alignment
-- **How do my current goals align with the business priorities for 2025?**
-- **Are my goals SMART (Specific, Measurable, Achievable, Relevant, Time-bound) enough?**
-- **Can you provide feedback on whether I am on track or off track in achieving my goals?**
-- **What metrics or key performance indicators (KPIs) will be used to evaluate my success?**
 
-## 2. Feedback & Development
-- **What are the key strengths you’ve observed in my performance so far?**
-- **Are there any specific areas where I need improvement?**
-- **What skills should I focus on developing to contribute more effectively to the team?**
-- **How can I leverage the company’s learning and performance resources to grow?**
-- **Are there any upcoming projects or responsibilities where I can gain more experience?**
+---
 
-## 3. Four Talks & Rating Process
-- **How do you see my performance fitting into the new rating scale?**
-- **How will the “On Track” vs. “Off Track” status impact my career growth?**
-- **If I’m rated “Off Track” in any area, what steps should I take to improve?**
-- **What additional support or resources can I access to meet expectations?**
+1. Clarity on Objective
 
-## 4. Leadership & Company Strategy
-- **Can you provide more insight into how our team’s work contributes to the company’s seven strategic priorities?**
-- **What are the biggest challenges facing our team this year, and how can I help?**
-- **How do you see my role evolving over the next year?**
-- **What opportunities exist for cross-functional collaboration or exposure to other teams?**
+What exactly do we mean by "deploying Compass"? Are we building something on top of Compass, integrating it, or automating configurations?
 
-## 5. Career Progression & Next Steps
-- **What steps should I take to position myself for future growth within the company?**
-- **Are there leadership opportunities or mentorship programs I should consider?**
-- **How do you see my potential for a promotion or increased responsibilities in the next review cycle?**
-- **Can we set up a follow-up discussion to review my progress in a few months?**
+Since Compass is a SaaS product, are we managing integrations (e.g., via APIs) or deploying Compass-related metadata using CI/CD?
 
-## 6. Company Values & Culture
-- **How can I better integrate company values into my daily work and decision-making?**
-- **Are there any specific behaviors or leadership qualities you’d like me to demonstrate more?**
-- **How does our team contribute to maintaining and improving company culture?**
+
+
+---
+
+2. CI/CD Scope
+
+Is the Jenkins infrastructure already set up and ready to use, or does it need to be created/configured?
+
+What components are expected to be part of the CI/CD pipeline? (e.g., plugin builds, service metadata registration, API integration?)
+
+Is there a Jenkinsfile or existing job we can refer to for context?
+
+
+
+---
+
+3. Code and Infra
+
+Can someone walk me through the code repositories — both the application and infrastructure repos?
+
+What does the infra repo provision? Are we using Terraform or CDK? Are there Compass components being registered as code?
+
+Are there any environment-specific configs (Dev, UAT, PROD) that we need to automate deployment into?
+
+
+
+---
+
+4. Access & Permissions
+
+Do I already have all the necessary accesses (AWS VPN, Jenkins, GitHub, Jira, Compass Admin/API access)?
+
+Are there any specific AD groups I should request to be added to for each AWS environment?
+
+
+
+---
+
+5. Integration Touchpoints
+
+Are we integrating Compass with GitHub, Jira, or any internal deployment tools?
+
+Are we emitting deployment events or service health/status updates to Compass from Jenkins?
+
+
+
+---
+
+6. Support & KT
+
+Who set this up originally? Can I get a quick KT session or documentation on what’s already built and how it fits together?
+
+Are there any architectural diagrams or flowcharts that explain how Compass, Jenkins, and AWS interact?
+
+
+
+---
+
+You can open with:
+
+> “Hey, before jumping in, I wanted to quickly align on what’s expected from this CI/CD deployment for Compass, since it’s a SaaS product — are we integrating, deploying extensions, or automating configurations?”
+
+
+
+Let me know how the call goes — I can help you summarize the discussion or draft a refined requirements doc next.
+
