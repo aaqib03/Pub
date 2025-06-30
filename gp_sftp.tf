@@ -70,3 +70,75 @@ output "connector_id" {
   description = "The ID of the SFTP connector"
   value       = aws_transfer_connector.this.id
 }
+
+
+
+variable "logging_role" {
+  description = "Optional: IAM role ARN to use for logging. If not provided, one will be created."
+  type        = string
+  default     = null
+}
+
+
+# Create default logging role only if not provided
+resource "aws_iam_role" "default_logging" {
+  count = var.logging_role == null ? 1 : 0
+
+  name = "sftp-transfer-logging-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Principal = {
+        Service = "transfer.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_policy" "default_logging_policy" {
+  count = var.logging_role == null ? 1 : 0
+
+  name = "sftp-transfer-logging-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      Resource = "*"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_logging" {
+  count      = var.logging_role == null ? 1 : 0
+  role       = aws_iam_role.default_logging[0].name
+  policy_arn = aws_iam_policy.default_logging_policy[0].arn
+}
+
+
+locals {
+  effective_logging_role = var.logging_role != null ? var.logging_role : aws_iam_role.default_logging[0].arn
+}
+
+
+resource "aws_transfer_connector" "this" {
+  access_role = var.access_role
+
+  sftp_config {
+    trusted_host_keys = var.trusted_host_keys
+    user_secret_id     = var.user_secret_id
+  }
+
+  url            = var.url
+  logging_role   = local.effective_logging_role
+
+  tags = var.tags
+}
