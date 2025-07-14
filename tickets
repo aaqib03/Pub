@@ -1,9 +1,21 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.0"
+    }
+  }
+}
+
+# ----------------------------
+# Define all providers (with alias)
+# ----------------------------
+
 provider "aws" {
   alias  = "us-east-1"
   region = "us-east-1"
 }
 
-# Add one provider per region (required for cross-region deployment)
 provider "aws" {
   alias  = "us-west-1"
   region = "us-west-1"
@@ -14,44 +26,51 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# Extend as needed...
+# ----------------------------
+# Input: Target regions
+# ----------------------------
 
-# List of regions you want to replicate to
 locals {
   target_regions = ["us-west-1", "ap-south-1"]
 }
 
-# Data block to fetch the value from us-east-1
-data "aws_ssm_parameter" "source" {
-  name            = "/your/parameter/name"
+# ----------------------------
+# Fetch parameter from us-east-1
+# ----------------------------
+
+data "aws_ssm_parameter" "jsm_routing_key" {
+  name            = "/transfer-hub/central/jsm/routing-key"
   with_decryption = true
   provider        = aws.us-east-1
 }
 
-# Filter regions only if value != "PLACE_HOLDER"
+# ----------------------------
+# Logic for conditional replication
+# ----------------------------
+
 locals {
-  valid_regions = data.aws_ssm_parameter.source.value != "PLACE_HOLDER"
-    ? local.target_regions
-    : []
+  jsm_routing_key_value = data.aws_ssm_parameter.jsm_routing_key.value
+
+  should_replicate      = local.jsm_routing_key_value != "PLACE_HOLDER"
+
+  # Replicate only if value is NOT PLACE_HOLDER
+  replication_regions   = local.should_replicate ? local.target_regions : []
 }
 
-# Map of region => provider alias
-locals {
-  region_provider_map = {
-    "us-west-1"  = aws.us-west-1,
-    "ap-south-1" = aws.ap-south-1
-  }
-}
+# ----------------------------
+# Replicate parameter to target regions
+# ----------------------------
 
-# Create parameter in other regions only if value is valid
 resource "aws_ssm_parameter" "replicated" {
-  for_each = toset(local.valid_regions)
+  for_each = toset(local.replication_regions)
 
-  name        = "/your/parameter/name"
-  type        = "SecureString"
-  value       = data.aws_ssm_parameter.source.value
+  provider = each.key == "us-west-1"  ? aws.us-west-1 :
+             each.key == "ap-south-1" ? aws.ap-south-1 :
+             aws.us-east-1  # fallback (optional)
+
+  name        = "/transfer-hub/central/jsm/routing-key"
+  type        = "String"
+  value       = local.jsm_routing_key_value
   overwrite   = true
   description = "Replicated from us-east-1"
-
-  provider    = local.region_provider_map[each.key]
 }
