@@ -198,3 +198,69 @@
   - **Endpoint Policy** to restrict service actions/resources.  
   - Place endpoints in **each AZ** to avoid cross-AZ traffic charges.  
   - Use **Gateway Endpoints** for S3/DynamoDB where possible (cost-effective).
+
+
+# AWS Network Security Services – Speaker Notes
+
+---
+
+## 🔹 AWS Network Firewall (ANFW)
+
+### Definition
+- Managed, **stateful firewall** for VPCs and subnets.  
+- Provides **IDS/IPS (Intrusion Detection/Prevention)**, deep packet inspection, and domain/IP/port-based filtering.  
+- Deployed as **firewall endpoints** inside a dedicated **firewall subnet**.  
+
+### Problem It Solves
+- Security Groups protect individual instances (limited scope).  
+- NACLs work at subnet level but are stateless and basic.  
+- Need for **centralized inspection and uniform security policies** across workloads.  
+- Helps prevent advanced attacks, block malicious domains, and control outbound traffic.  
+
+### Speaking Points
+- “AWS Network Firewall centralizes traffic inspection for subnets and workloads.”  
+- “It supports IDS/IPS and deep packet inspection, giving us advanced capabilities beyond SGs and NACLs.”  
+- “Traffic flows through firewall endpoints in firewall subnets, where it is inspected before being routed to protected subnets.”  
+- “This ensures all inbound and outbound traffic is checked against consistent rules.”  
+
+---
+
+## 🔹 AWS Web Application Firewall (WAF)
+
+### Definition
+- **Application-layer firewall (Layer 7)** for **HTTP/HTTPS traffic**.  
+- Can attach to **CloudFront, Application Load Balancers, API Gateway, AppSync**.  
+- Uses **Managed Rule Groups** (SQLi, XSS, bots) or **custom rules**.  
+
+### Problem It Solves
+- Network Firewall doesn’t understand **application-specific exploits**.  
+- Protects apps from **SQL injection, cross-site scripting (XSS), and malicious bots**.  
+- Prevents invalid/malicious web requests from reaching backend applications.  
+
+### Speaking Points
+- “AWS WAF focuses on protecting web applications at the HTTP/HTTPS layer.”  
+- “It blocks application-specific threats like SQL injection and XSS.”  
+- “I can attach WAF to my ALB or CloudFront so that every request is inspected before reaching my app.”  
+- “It gives me flexibility to use AWS Managed Rules or build my own policies.”  
+
+---
+
+## 🔹 AWS Shield
+
+### Definition
+- **Managed DDoS (Distributed Denial of Service) protection service**.  
+- **Shield Standard** → Free, enabled by default, protects against common volumetric attacks.  
+- **Shield Advanced** → Paid, adds enhanced detection, detailed reporting, cost protection, and AWS DDoS Response Team support.  
+
+### Problem It Solves
+- Protects against **volumetric, protocol, and application-level DDoS attacks**.  
+- DNS-based attacks (via Route 53) or massive floods can make apps unavailable.  
+- Without Shield, critical services could be taken down.  
+
+### Speaking Points
+- “AWS Shield protects resources from DDoS attacks, which are among the most common internet threats today.”  
+- “Shield Standard is always on and free, protecting AWS resources by default.”  
+- “Shield Advanced offers additional support, detailed reporting, and integration with services like Route 53, ALB, and WAF.”  
+- “For example, if attackers try to flood my DNS or load balancer, Shield keeps applications available and mitigates the attack automatically.”  
+
+---
