@@ -200,67 +200,42 @@
   - Use **Gateway Endpoints** for S3/DynamoDB where possible (cost-effective).
 
 
-# AWS Network Security Services – Speaker Notes
+## AWS Network Security Services – Speaker Notes
 
 ---
 
 ## 🔹 AWS Network Firewall (ANFW)
 
-### Definition
-- Managed, **stateful firewall** for VPCs and subnets.  
-- Provides **IDS/IPS (Intrusion Detection/Prevention)**, deep packet inspection, and domain/IP/port-based filtering.  
-- Deployed as **firewall endpoints** inside a dedicated **firewall subnet**.  
-
-### Problem It Solves
-- Security Groups protect individual instances (limited scope).  
-- NACLs work at subnet level but are stateless and basic.  
-- Need for **centralized inspection and uniform security policies** across workloads.  
-- Helps prevent advanced attacks, block malicious domains, and control outbound traffic.  
-
-### Speaking Points
-- “AWS Network Firewall centralizes traffic inspection for subnets and workloads.”  
-- “It supports IDS/IPS and deep packet inspection, giving us advanced capabilities beyond SGs and NACLs.”  
-- “Traffic flows through firewall endpoints in firewall subnets, where it is inspected before being routed to protected subnets.”  
-- “This ensures all inbound and outbound traffic is checked against consistent rules.”  
+- “AWS Network Firewall is a **managed, stateful firewall service** for our VPCs and subnets.”  
+- “It goes beyond what Security Groups and NACLs can do — they only filter by IP, port, and protocol. They cannot do deep packet inspection, intrusion detection, or domain filtering.”  
+- “With Network Firewall, we can enforce **centralized security policies** across entire subnets.”  
+- “It supports **IDS/IPS** using industry-standard Suricata rules and can block or alert on malicious traffic patterns.”  
+- “Traffic flows through **firewall endpoints** deployed in firewall subnets. Inbound traffic from the internet, or outbound traffic from protected subnets, is inspected here before being allowed.”  
+- “This allows us to block malicious IPs or domains, prevent data exfiltration, and log all traffic for analysis in **CloudWatch, S3, or Kinesis**.”  
+- “In short, Network Firewall provides **centralized, advanced traffic inspection** across workloads — something Security Groups and NACLs alone cannot achieve.”  
 
 ---
 
 ## 🔹 AWS Web Application Firewall (WAF)
 
-### Definition
-- **Application-layer firewall (Layer 7)** for **HTTP/HTTPS traffic**.  
-- Can attach to **CloudFront, Application Load Balancers, API Gateway, AppSync**.  
-- Uses **Managed Rule Groups** (SQLi, XSS, bots) or **custom rules**.  
-
-### Problem It Solves
-- Network Firewall doesn’t understand **application-specific exploits**.  
-- Protects apps from **SQL injection, cross-site scripting (XSS), and malicious bots**.  
-- Prevents invalid/malicious web requests from reaching backend applications.  
-
-### Speaking Points
-- “AWS WAF focuses on protecting web applications at the HTTP/HTTPS layer.”  
-- “It blocks application-specific threats like SQL injection and XSS.”  
-- “I can attach WAF to my ALB or CloudFront so that every request is inspected before reaching my app.”  
-- “It gives me flexibility to use AWS Managed Rules or build my own policies.”  
+- “AWS WAF is a **web application firewall** that protects HTTP and HTTPS traffic at the **application layer (Layer 7)**.”  
+- “We attach WAF to entry points like **CloudFront, Application Load Balancer, API Gateway, or AppSync**.”  
+- “It protects applications from **common web exploits** such as **SQL injection, cross-site scripting (XSS), and bot attacks**.”  
+- “WAF uses **AWS Managed Rule Groups**, or we can write our own custom rules. For example, we can block requests with suspicious headers or from certain IPs.”  
+- “Traffic first comes through our load balancer or CloudFront. WAF inspects the HTTP(S) requests before they reach our backend applications.”  
+- “For example, if an attacker tries SQL injection on our login page, WAF blocks that request at the edge. Our app never even sees it.”  
+- “So in summary, WAF gives **application-level protection** for web servers and APIs that network firewalls or SGs cannot provide.”  
 
 ---
 
 ## 🔹 AWS Shield
 
-### Definition
-- **Managed DDoS (Distributed Denial of Service) protection service**.  
-- **Shield Standard** → Free, enabled by default, protects against common volumetric attacks.  
-- **Shield Advanced** → Paid, adds enhanced detection, detailed reporting, cost protection, and AWS DDoS Response Team support.  
-
-### Problem It Solves
-- Protects against **volumetric, protocol, and application-level DDoS attacks**.  
-- DNS-based attacks (via Route 53) or massive floods can make apps unavailable.  
-- Without Shield, critical services could be taken down.  
-
-### Speaking Points
-- “AWS Shield protects resources from DDoS attacks, which are among the most common internet threats today.”  
-- “Shield Standard is always on and free, protecting AWS resources by default.”  
-- “Shield Advanced offers additional support, detailed reporting, and integration with services like Route 53, ALB, and WAF.”  
-- “For example, if attackers try to flood my DNS or load balancer, Shield keeps applications available and mitigates the attack automatically.”  
+- “AWS Shield is a **managed DDoS protection service**.”  
+- “It comes in two tiers: **Shield Standard** and **Shield Advanced**.”  
+- “Shield Standard is **free and always on**. It protects against common volumetric and protocol-level DDoS attacks.”  
+- “Shield Advanced is **paid**, and provides stronger detection, advanced mitigations, detailed reports, cost protection, and support from the AWS DDoS Response Team.”  
+- “Shield protects critical services like **Route 53 (DNS)**, **CloudFront**, **Application Load Balancers**, and works hand-in-hand with **WAF**.”  
+- “For example, DNS-based attacks are common. Since every internet connection starts with DNS, attackers may try to flood DNS servers. Shield Advanced integrated with Route 53 ensures DNS queries are always protected.”  
+- “So while WAF protects against **application-layer attacks**, and Network Firewall protects **subnet-level traffic**, Shield protects us from **large-scale DDoS attacks** that could take services offline.”  
 
 ---
