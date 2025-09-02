@@ -239,3 +239,6 @@
 - “So while WAF protects against **application-layer attacks**, and Network Firewall protects **subnet-level traffic**, Shield protects us from **large-scale DDoS attacks** that could take services offline.”  
 
 ---
+
+
+
