@@ -1,0 +1,197 @@
+# 🧠 Product Requirements Document (PRD)
+## AI Onboarding & Workplace Assistant  
+**Version:** v1.0 | **Owner:** Tibbi Labs | **Last Updated:** October 2025
+
+---
+
+## 1️⃣ Executive Summary
+Enterprises struggle with fragmented onboarding — new hires must navigate multiple tools (HR, IT, access, policy documents) to become productive.  
+This project builds an **AI-powered Onboarding & Workplace Assistant** that:
+- Answers employee questions via **Google Chat**  
+- Leverages **Amazon Bedrock** for intelligent responses  
+- Uses a **central Knowledge Base (S3 + GitHub)** for accuracy and compliance  
+- Later evolves into an **Action-oriented Agent** that can execute tasks (e.g., raise access requests)
+
+**Phase 1 Goal:** Deploy a secure, role-aware chatbot that personalizes answers from internal knowledge.  
+**Phase 2 Goal:** Extend to an intelligent agent that performs approved workflows via Lambdas.
+
+---
+
+## 2️⃣ Problem Statement
+**Current pain points**
+- Onboarding processes span HR, IT, and Security with siloed tools.  
+- Employees raise redundant tickets and face delays.  
+- Information is dispersed across Confluence, PDFs, and emails.  
+- Lack of visibility into what access or tasks are pending.  
+
+**Vision**
+> A single conversational interface where every employee can ask, *“What do I need to do next?”* — and instantly get accurate, contextual, and safe responses.
+
+---
+
+## 3️⃣ Goals & Non-Goals
+| Goals | Non-Goals |
+|-------|------------|
+| Unified employee assistant integrated with Google Chat | Replacing existing HRMS or ITSM systems |
+| Personalized onboarding guidance per role/department | Full automation of all IT processes in Phase 1 |
+| Centralized knowledge base synced from GitHub → S3 | Open internet search or non-vetted data |
+| Secure, compliant architecture with Bedrock + Guardrails | Public or anonymous access |
+| Observability, metrics, and continuous learning | Multi-language support (Phase 3) |
+
+---
+
+## 4️⃣ Target Users & Personas
+| Persona | Description | Primary Use |
+|----------|--------------|--------------|
+| **New Hire** | Recently onboarded employee | Access steps, HR policy queries |
+| **Manager / Team Lead** | Responsible for onboarding approvals | Status checks, escalations |
+| **HR / IT Support** | Admin teams supporting employees | Content curation, FAQ management |
+| **Security Officer** | Oversees compliance & privacy | Audit logs, review KB updates |
+
+---
+
+## 5️⃣ User Journeys (Phase 1)
+### Example 1 – Day-1 Onboarding
+1. User: “What do I need to do on my first day?”  
+2. Chatbot: Responds with checklist + links from HR KB.  
+3. Optionally: Provides role-specific tasks (e.g., setup GitHub, VPN, email).
+
+### Example 2 – Access Inquiry
+1. User: “Do I have Jira and VPN access?”  
+2. Bot: Responds from HR/IT policies and access matrix.  
+3. (Phase 2 → can trigger real SailPoint check or request.)
+
+### Example 3 – IT Help
+1. User: “VS Code not installing — what should I do?”  
+2. Bot: Returns solution from KB or raises a Freshservice ticket (Phase 2).
+
+---
+
+## 6️⃣ Functional Requirements
+
+### Phase 1 — Chatbot MVP
+| Area | Functionality |
+|------|----------------|
+| **Chat Interface** | Google Chat 1:1 DM bot (not Spaces) |
+| **Knowledge Access** | Query Bedrock KB (S3 + GitHub mirror) |
+| **Response Style** | Markdown or rich cards with links |
+| **Personalization** | Based on user role/region (from DDB) |
+| **Logging** | Store Q&A metadata, feedback |
+| **Safety** | Bedrock Guardrails + PII filters |
+| **Feedback Loop** | 👍 / 👎 with optional comment |
+
+### Phase 2 — Agent Mode
+| Feature | Description |
+|----------|-------------|
+| Action Groups | Bedrock Agent invokes Lambdas for actions |
+| Tool Lambdas | access-submit, access-status, install-tool |
+| Policy Gate | RBAC, approval flow, idempotency |
+| Audit Trail | Immutable log per action |
+| Human Escalation | Confirmation before risky actions |
+| Kill Switch | Feature flag to instantly disable tools |
+
+---
+
+## 7️⃣ Non-Functional Requirements
+| Category | Target / Policy |
+|-----------|----------------|
+| **Latency** | ≤ 2 s response (Q&A) |
+| **Uptime** | ≥ 99.9 % |
+| **Scalability** | Lambda auto-scale, DDB on-demand |
+| **Cost** | ≤ $0.10 per 1k queries |
+| **Security** | TLS 1.2+, KMS encryption, IAM least privilege |
+| **Compliance** | ISO 27001 / SOC 2 / DPDP Act |
+| **Observability** | CloudWatch metrics + alarms |
+| **Data Retention** | 90 days (interactions) / 1 year (audit) |
+
+---
+
+## 8️⃣ Security & Responsible AI Summary
+- Privacy-by-design, minimal data sharing to LLM.  
+- Guardrails for PII, sensitive topics, and jailbreak attempts.  
+- Content sourced only from vetted internal repositories.  
+- IAM-scoped resources, Secrets Manager for tokens.  
+- Continuous safety audits + red-team tests.  
+- Governance committee + change control board oversight.  
+*(Detailed in `SECURITY_GUIDE.md`.)*
+
+---
+
+## 9️⃣ System Architecture Summary
+See full details in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
+**Stack Highlights**
+- AWS Lambda (Python) + API Gateway  
+- Amazon Bedrock (Claude 3.5 Sonnet) + Knowledge Base  
+- S3 / Kendra for document storage + retrieval  
+- DynamoDB for user context and logging  
+- Secrets Manager for secure credential storage  
+- CloudWatch for logging + metrics  
+- EventBridge for scheduled status updates  
+
+---
+
+## 🔟 KPIs & Success Metrics
+| Metric | Target |
+|---------|--------|
+| Grounded Answer Rate | ≥ 90 % |
+| Unsafe Prompt Rate | ≤ 0.5 % |
+| Avg Response Latency | ≤ 2 s |
+| User Adoption | ≥ 50 % of new hires in first 3 months |
+| Feedback Satisfaction | ≥ 4.5 / 5 |
+| Ticket Reduction | ≥ 25 % less IT tickets in quarter 1 |
+
+---
+
+## 11️⃣ Release Plan
+| Phase | Duration | Deliverables |
+|--------|-----------|--------------|
+| **Phase 1 — Chatbot MVP** | 6 weeks | Google Chat integration, Bedrock KB, logging, guardrails, feedback |
+| **Phase 2 — Agent Mode** | +8 weeks | Action Groups, tool Lambdas, RBAC, approvals, audit dashboard |
+| **Phase 3 — Analytics & Insights** | +6 weeks | Manager dashboards, sentiment analysis, reporting API |
+
+---
+
+## 12️⃣ Risks & Mitigation
+| Risk | Impact | Mitigation |
+|------|---------|------------|
+| Hallucination / wrong answers | Medium | RAG + citations + feedback loop |
+| Unauthorized access | High | IAM least privilege + RBAC |
+| Cost spike | Medium | Token trimming + usage dashboards |
+| Poor KB quality | Medium | HR/IT curation workflow |
+| Low adoption | Medium | Pilot launch + awareness training |
+
+---
+
+## 13️⃣ Dependencies
+- AWS Bedrock access (Claude 3.5 Sonnet)  
+- Google Cloud workspace project + bot registration  
+- IAM roles & policies for Lambdas  
+- GitHub repo sync workflow to S3  
+- Security review sign-off  
+
+---
+
+## 14️⃣ Governance & Approval
+| Role | Responsibility |
+|------|----------------|
+| **Product Owner** | Overall vision, requirements |
+| **AI Lead** | Model integration + KB design |
+| **Security Officer** | Guardrails, privacy, audit |
+| **HR / IT Stakeholders** | Knowledge curation, feedback |
+| **DevOps Team** | Infra provisioning + monitoring |
+| **Governance Board** | Policy review & approvals |
+
+---
+
+## 15️⃣ Appendix
+- [`DESIGN_READINESS.md`](DESIGN_READINESS.md)  
+- [`ARCHITECTURE.md`](ARCHITECTURE.md)  
+- [`SECURITY_GUIDE.md`](SECURITY_GUIDE.md)  
+- Sample prompts & response templates  
+- Evaluation metrics suite for QA testing  
+
+---
+
+**End of Document**  
+📄 **PRD Version:** 1.0  |  **Status:** Ready for Review (Phase 1 MVP)
