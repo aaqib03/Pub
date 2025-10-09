@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "smart-manager-474509",
+  "private_key_id": "ed505a78f56df1272a45448c56d8cb00b5db9e60",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDpb8/RgOGqMXTb\nreJV3KphaaDlzgAawYbkeL+o3+i+ysH8gzE5xoATo+FHcP+2rN/WsC+zLiCwV+Kb\nrYTkbG1LdO/PoORScE1i1JkCh+fP2097k3V4Mcc9uZZUtVSSjxdDOASvtyuCczT/\nNhQUtkgIWuCTO6lWpyn/1bsMPh0mvpt14Bo4TBNlBZ2HGFQQi5Ufy5bSpdAE36FF\n3UTwfbofzuJ7ZLXsySCsO6P+ZH9YUgL+dqmHMUQNpmiS78Fv6DilO/EPWlgwFPqB\nK80ZsXGnfWdIIWxp8CeEbCgsHJOpq13aE/LzssnodN648yIxyEjN/VgfTcMoVPfF\nlLuSMlu5AgMBAAECggEAGnCmqkUdykglw0gTrcP7rGLpbX4CtwUagUBH/Rm3Y/zV\nMgOuDKw2D4NtXcknvYohJFD6ZiIgY7jgmt9xgOnjCzvoeazwj4HW0g3gcs/v6rQd\ncZLHKGEC/zPJGjkbpin86YkrxrdJf1ILO6jlZ18qE4AvlZ2ZVY5DjI2pzP4wERYo\nXCQc9Bi0fVXCUalO/Fz02kzDu03QWJZpTaLZvPIuTZG6Q4NURl4MQLhsrc7P3GbW\nBHzUvjHJOukwUy6YxT8fUBVDtWXi9Jkbi9oGwkUqLgEuEoWz6EY8DuRsDkML1jno\nqzgQNAmRVP5Mc3djkJK76iKuHKfROldKzw8A+CCZHQKBgQD+LgTKgG7UR2t880t1\nSLC0VHdwiv6cwYgdlDqTLVtyOKFqae8Ce+1lxmJ+aHDoRIhSMOdHyo256WAUzejE\ngOd8gdXq5JaaSawU7o82z3SekrSKC4GL9HyrMtUWYlKqNPeS9QTMOtg5Hw5BIyj4\nWOvlAQU3hD77n8RhD4FFeK4Y2wKBgQDrG8P1zWVqxnpx/NPHpqVG+LoyWR6Svq1b\net09uBnJ02F7VhG6sZR+AEbWZQgNdxZpIIHsepPDpITYQeis2/gyffFKmgjyIbnV\nbxq4j2wFs+58wFb0onydAiYo1jNe+sN86hGwUsdpjiE2Kl3w4A73Tss3WxYGmv9k\nPnrsLhYH+wKBgE+J3v3vSr8qyjwDdi1xXbpQZD/Xfu1Wsl1vMRU1MFSB3CEMnTpN\nxW//sHqV/B7ysyXlH7qba9YtbV+VP62eGNIhXutuNKJ7Q1oZfL9OE9Q7XDuGdjdx\nfkGkWoHyqqOQh5h5C9NM5rSZP0Cq2/s6+DZlJ1jEDWF4EV++FlnC9dfZAoGAIQEU\n0Ty0L/kM11OWp0BNk1j3SnoYQKFj1KO6yx88/4gc9yNt+bdUERwY1Z/5MWq2Squ1\nkWzjsWM3AuS9tQZsISps5PwapWL2o2+lYKNBlstbf0fA7TaiJ6hVkwX+0CaDqtVx\nBj+YnsjFAMWRym6pqy30eSDgRq0bjQb4Wo9dqGECgYEAyZrFKIeAvsx8snPBqbUx\nfdcmEBXQDKDZhzgoZy/d8u2bvuOS3RzQ/moDdULt5PljouTGnO1/9yLY/ZB5WM7F\nmsYVHg3b3S5ZHu9QJxNEqq217csoizj8UpMSwzpqCa8b30C4GvSZY19jNwZV43c+\nnvJFkhNU4Fxrt0mcToeacKs=\n-----END PRIVATE KEY-----\n",
+  "client_email": "onboard-sa@smart-manager-474509.iam.gserviceaccount.com",
+  "client_id": "104137912590107846381",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/onboard-sa%40smart-manager-474509.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
