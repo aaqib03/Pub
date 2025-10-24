@@ -2,20 +2,112 @@
 
 This document outlines the key phases and tasks for developing the **Pathome Diagnostics Aggregator** platform. Each phase is broken into sequential tasks with clear objectives, rationale, and implementation steps. The focus is on a structured approach from company inception through MVP development, testing, launch, feedback, scaling, and compliance. Short, focused tasks ensure clarity and aid in distributing work effectively.
 
-## Phase 1: Company Setup
+## Phase 1 — Company Setup & Developer Environment
 
-In this phase, the foundation of the company and project is established. Tasks include defining the product vision, setting up the legal entity, building the core team, and establishing the development environment and tools. Early integration of AI-assisted development tools (GitHub Copilot and Copilot Chat) is included to boost productivity. Each task ensures the company is prepared to efficiently develop the MVP.
+This phase establishes the legal, operational, and technical foundation for Pathome (or FyndWork).  
+It covers incorporation, team formation, domain/workspace setup, identity and access management, GitHub organization, developer tooling, and cloud skeleton infrastructure.  
+By the end of Phase 1, the company should have a secure, collaborative environment where developers can start building the MVP immediately.
 
-| Task                   | What We Are Doing                                           | Why It Is Required                                                                         | How To Implement It                                                                      |
-|------------------------|------------------------------------------------------------|--------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
-| **Task 1**: Define Vision & Market Research  | Clarifying the product vision, value proposition, and conducting initial market and user research. | To ensure the product idea addresses real market needs and to gather evidence for its viability (the more information gathered, the higher the chance of success0). This alignment guides all future development. | Organize brainstorming sessions to define the mission and unique value of the diagnostics aggregator. Perform market research by analyzing industry reports, competitor offerings, and potential user interviews/surveys. Document findings and refine the product concept based on the data. |
-| **Task 2**: Company Incorporation & Legal Setup | Formally establishing the company as a legal entity and handling necessary registrations, licenses, or compliances. | A legal corporate structure is required to operate the business, enter contracts, protect intellectual property, and potentially raise funds. It legitimizes the venture and protects founders’ personal assets. | Choose an appropriate business structure (e.g., LLC, C-Corp) and jurisdiction. Register the company name, obtain required tax IDs, and consult with legal counsel to file incorporation documents. Set up business bank accounts and legal contracts (founder agreements, NDAs, etc.) as needed. |
-| **Task 3**: Build Core Team & Define Roles | Assembling the initial team (founders, engineers, domain experts) and clearly defining each member’s roles and responsibilities. | A balanced team is crucial for execution. Defining roles avoids confusion and ensures all critical skills (technical development, domain knowledge, operations) are covered. Clear responsibilities improve efficiency and accountability. | Identify skill gaps based on the product’s needs (e.g., software engineering, pathology/diagnostics expertise, UI/UX design). Hire or assign team members to fill key roles (CTO, Lead Developer, Product Manager, etc.). Document each role’s scope (who handles development, testing, outreach, etc.) and establish communication norms (e.g., meeting cadence, decision-making process). |
-| **Task 4**: Set Up Development Infrastructure | Setting up the development environment and core infrastructure for the project, including source code repository, development tools, and continuous integration (CI) basics. | A robust development setup is required to enable collaboration and maintain code quality from the start. Version control and CI ensure that code is managed centrally and tested automatically, reducing integration issues and technical debt. | Create a Git repository (e.g., on GitHub) for the project and invite team members. Establish repository conventions (branching strategy, code review requirements, and naming conventions). Set up a basic CI pipeline (using GitHub Actions or similar) to run tests or linters on each commit. Provide developers with access to the repository and define coding standards and best practices in a `CONTRIBUTING.md` or wiki. |
-| **Task 5**: Establish Project Management & Communication Tools | Adopting tools for task tracking and team communication to manage the project effectively. | Organizational tools are needed to coordinate work across the team. Project management ensures tasks are tracked and prioritized, while communication tools keep everyone aligned, especially if team members are remote. | Choose a project tracking tool (e.g., Jira, Trello, or GitHub Projects) and set up the initial project board with backlog columns (To Do, In Progress, Done). Define an initial set of milestones for the MVP. Likewise, set up team communication channels (e.g., Slack or Microsoft Teams) and schedule regular stand-ups or update meetings. Ensure everyone has access and knows how to use these tools. |
-| **Task 6**: Integrate GitHub Copilot & Copilot Chat in Workflow | Incorporating AI pair programming tools (GitHub Copilot and Copilot Chat in VS Code) into the development workflow and toolchain. | Leveraging AI coding assistants can significantly speed up development (e.g., studies show tasks can be completed ~55% faster with AI suggestions1) and help developers produce code with fewer errors. Early integration ensures the team can take full advantage of these tools from the beginning. | Enable GitHub Copilot for the repository or individual developers (ensure appropriate licensing or subscription is in place). In Visual Studio Code, install the GitHub Copilot extension and the Copilot Chat extension. Confirm that developers can invoke Copilot suggestions and use the Copilot Chat panel for guidance or debugging within the editor. Provide a short onboarding session or share prompt tips so the team knows how to ask Copilot for help (e.g. writing boilerplate, generating tests, explaining code). |
-| **Task 7**: Outline MVP Scope & Requirements | Defining the scope of the Minimum Viable Product (MVP) – the core features and user stories that the first version of the Diagnostics Aggregator must include. | A clear definition of the MVP is required to focus development on the most critical features that demonstrate the platform’s value. It prevents scope creep and ensures a faster launch with minimal yet valuable functionality2. Clarity here guides the Phase 2 development tasks. | Conduct a kickoff workshop with the team to identify the essential features of the aggregator (e.g., ability to aggregate diagnostic results from multiple sources, user login, basic dashboard of results). Write down user personas and the key problems the MVP will solve for them. From this, draft a Product Requirements Document (PRD) or create user stories in the project management tool. Prioritize these requirements by importance and feasibility for the MVP release. |
+---
 
+### **Task 1 — Define Vision & Market Research**
+| What We’re Doing | Clarify the product vision, target users, and unique value proposition; validate with early market and competitor research. |
+| Why It’s Required | Ensures problem–solution fit and data-driven direction for MVP features and messaging. |
+| How To Implement | Workshops + desk research → synthesize insights in a “Vision & Hypotheses” doc; share internally for alignment. |
+
+---
+
+### **Task 2 — Company Incorporation & Legal Setup**
+| What We’re Doing | Register the company, obtain GST/tax IDs, draft founder & IP agreements, open business bank accounts. |
+| Why It’s Required | Legitimizes operations, protects founders, and enables contracts / funding. |
+| How To Implement | Choose entity type (LLP/Private Ltd), file incorporation, open bank, appoint CA/legal advisor, store docs under `/Finance & Legal`. |
+
+---
+
+### **Task 3 — Build Core Team & Define Roles**
+| What We’re Doing | Assemble core team (engineering, domain, design), document responsibilities, and set communication cadence. |
+| Why It’s Required | Clear ownership and balanced skill mix prevent execution bottlenecks. |
+| How To Implement | Create team roster + RACI chart; schedule weekly stand-up / bi-weekly planning. |
+
+---
+
+### **Task 4 — Domain & Workspace (G Suite) Setup**
+| What We’re Doing | Purchase official domain (e.g., `pathome.ai` / `fyndwork.com`) and configure Google Workspace for email, Drive, Calendar. |
+| Why It’s Required | Provides professional identity, shared storage, and baseline IT security. |
+| How To Implement | Buy domain → verify DNS → create accounts (`founder@`, `support@`, `devops@`) → enable 2FA → configure shared folders and group aliases. |
+
+---
+
+### **Task 5 — Source Control & GitHub Organization**
+| What We’re Doing | Create a GitHub Organization with structured repos, branch policies, and CI templates. |
+| Why It’s Required | Centralizes code, enforces quality gates, and streamlines collaboration. |
+| How To Implement |  
+1️⃣ Create org (`pathome` / `fyndwork-labs`).  
+2️⃣ Teams → `devs`, `ops`, `design`.  
+3️⃣ Repos → `frontend`, `backend`, `infra`, `docs`.  
+4️⃣ Add PR rules, Actions CI, Dependabot, README.  
+5️⃣ Connect Slack / Jira integrations. |
+
+---
+
+### **Task 6 — Authentication & SSO Integration**
+| What We’re Doing | Link Google Workspace SSO to GitHub, Slack, and cloud accounts; define roles & access groups. |
+| Why It’s Required | Simplifies onboarding/off-boarding, enforces MFA, and centralizes identity management. |
+| How To Implement |  
+• Enable OAuth SSO (Google → GitHub & Slack).  
+• Create groups (`engineering@`, `ops@`).  
+• Mandate 2FA + hardware keys.  
+• Use 1Password Teams / Bitwarden Vault for shared secrets. |
+
+---
+
+### **Task 7 — Developer Environment & DX Enhancements**
+| What We’re Doing | Build reproducible local dev environment, VS Code workspace, pre-commit hooks, Copilot Chat integration. |
+| Why It’s Required | Ensures consistent setup (< 20 min from clone → run), reduces friction, and boosts productivity. |
+| How To Implement |  
+• Create `setup.sh` to install Node, Python, Docker, Prettier.  
+• VS Code workspace → recommended extensions (Copilot, ESLint, Docker).  
+• Add `.env.example`, pre-commit hooks, Docker Compose for local API+DB.  
+• Add `/docs/copilot-prompts.md` library. |
+
+---
+
+### **Task 8 — DevOps Tooling & Cloud Skeleton**
+| What We’re Doing | Initialize AWS organization, IAM roles, Terraform state backend, and placeholder modules for CI/CD. |
+| Why It’s Required | Prepares scalable, secure infrastructure ready for MVP deployments. |
+| How To Implement |  
+• Create AWS account → `admin@pathome.ai`.  
+• Define IAM users & roles.  
+• Set up S3 + DynamoDB for Terraform state locking.  
+• Bootstrap modules (`vpc`, `rds`, `s3`, `ecs-fargate`).  
+• Configure OIDC GitHub Actions deployment permissions.  
+• Add CloudWatch metrics + basic alarms. |
+
+---
+
+### **Phase 1 Deliverables Checklist**
+
+| Area | Deliverable | Owner | Status |
+|------|--------------|--------|--------|
+| Vision & Research | Vision doc + market report | Founder | ✅ |
+| Legal Setup | Incorporation + bank + agreements | Founder | ✅ |
+| Core Team | Roles & communication plan | Founder | ✅ |
+| Domain & Workspace | Verified domain + G Suite | DevOps | ⏳ |
+| Source Control | GitHub Org + repos + CI skeleton | Eng Lead | ⏳ |
+| Authentication & SSO | Workspace ↔ GitHub/Slack integration | DevOps | ⏳ |
+| Dev Environment DX | Setup scripts + VS Code workspace | Eng Lead | ⏳ |
+| Cloud Skeleton | AWS account + Terraform backend | DevOps | ⏳ |
+
+---
+
+### **Phase 1 Exit Criteria**
+- ✅ Domain verified & active email addresses.  
+- ✅ GitHub organization and repos operational with CI checks.  
+- ✅ Workspace SSO enabled across core tools.  
+- ✅ Local developer setup reproducible within 20 minutes.  
+- ✅ Terraform state backend and base AWS resources ready.
+
+Once all items are complete, transition directly to **Phase 2 — MVP Product Development**.
 ## Phase 2: MVP Product Development
 
 Phase 2 is focused on building the MVP of the Pathome Diagnostics Aggregator. This phase is especially detailed, breaking down the development process into specific tasks that can be distributed among the team. The goal is to rapidly develop a **minimal, yet functional product** that can be tested and validated by real users. The emphasis is on core functionality – supporting must-have features that demonstrate the platform’s value – rather than a full feature set3. Throughout this phase, we continue to leverage AI tools (Copilot) to accelerate coding, and we maintain best practices in coding, version control, and documentation.
