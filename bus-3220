@@ -1,0 +1,287 @@
+21:11
+Go go down further. 
+
+Which next, Yeah, next? 
+
+Now, what you have to do is next line four zero six zero. 
+
+Now, what you have to do is next line four zero six zero. 
+
+After 4.60 line, next line. 
+
+After 4.60 line next line 406, Fix it. 
+
+Oh yeah, yeah, that create a new line before the four zero fine and next two, four zero fine nine next line. 
+
+Yeah, Presenter. 
+
+Yeah, now What is your Source? 
+
+What is the source that they gave you? 
+
+Okay, this one. 
+
+Copy that one 10, 152, That one? 
+
+Yeah, absolutely. 
+
+Yeah, tools PC Enterprise only 10, 150. 
+
+That's Weird capital letter, Uh, tools PCA Enterprise. 
+
+Which region is this is? 
+
+We did want to do one VPC And And one 52, 72, 0. 
+
+Okay, only one VPC is there. 
+
+Okay, so it's in in the document. 
+
+Yeah, Next next, But I'm not Pepper. 
+
+Never use local. 
+
+Next Next Next? 
+
+Okay, that is everyone need to go back. 
+
+Go Next. 
+
+This is the one that you need it. 
+
+Okay, tools PCA NV Just copy that Go to line number 4060. 
+
+Yeah, today, food zero six zero come down down for that down. 
+
+Yeah today, food zero six zero come down down for that down. 
+
+Yeah, Now type SSL bump. 
+
+No splice, you have to displace. 
+
+No splice. 
+
+You have to displace Is needed for. 
+
+If you try to access through https Uh, if, if that, you are only having lower version of encryption algorithm, then it won't allow that. 
+
+Okay, so to don't consider whatever algorithm entrance algorithm they are using. 
+
+Just Move it, just bump their result. 
+
+Don't worry about their salt there, so that is what it is doing so from the source IP. 
+
+This one and the destination URL, Uh, copy that from line number four zero five six app is the hybrid intercepted exceptions. 
+
+Yeah, so this RPG hybrid intercepted exception series mentioned in four zero three nine 4039. 
+
+If you read it there, it is Rpg hybrid intercepted. 
+
+Exceptions and destination URL is star.google API.com? 
+
+Okay, This is one thing, um, then come down for a bit. 
+
+Don't forget. 
+
+Ah, click down down. 
+
+Yeah, yeah, Yeah, Yeah. 
+
+Next to four to four, one next line create a next link 4241. 
+
+Yeah, that's where RPG everything is there. 
+
+And next line Https access follow. 
+
+Again that? 
+
+Tools PCI environ copy that name? 
+
+To rely number four zero is six zero. 
+
+Four zero six zero. 
+
+Yeah, to speak, And we copy that name Countdown down down down down. 
+
+And then you are going hello, RP. 
+
+High pressure. 
+
+That's correct. 
+
+So, if you use those variables to create this? 
+
+So, if you use those variables to create this, Okay, you don't need to worry about it. 
+
+Now to test it. 
+
+Now, save it and Comment this code. 
+
+So, these are the changes your story here. 
+
+And we can see. 
+
+Have The changes. 
+
+Okay, um, no, no good. 
+
+Now, go to You, you committed, right? 
+
+Yeah, it is that. 
+
+Okay, yeah. 
+
+Okay, now go, Um, then gets open. 
+
+I don't want to to get a picture now in search bar, so it's validated. 
+
+I don't want to to get a picture now in search bar, so it's validated. 
+
+Yeah. 
+
+Yeah. 
+
+Okay, Now now come down to shade PCI select shared PCI. 
+
+Now, what is the IP that you have in jira 10.152 dot? 
+
+Yeah, copy that and paste it there. 
+
+Yeah. 
+
+22, 22 give you a number five, delete the zero, and give 5 plus 5 Yeah, fire Comma. 
+
+Um, no, no space, no space. 
+
+Holland double slash Https goal and double slash and give that URL resource manager.googleafays.com. 
+
+Whatever it is copy from there and give it yet. 
+
+Without a That is, But 3145 open that ticket. 
+
+I think bus 314, I should have it. 
+
+Copy that whole line for now. 
+
+Copy that whole line for now. 
+
+Yeah, I'll wait. 
+
+Now, build some click on build. 
+
+So, this is this validating. 
+
+Yeah, it should say okay, because you, you have not allowed it, uh, in develop, you have not merged it, right? 
+
+So, let's wait for it to fail. 
+
+So, let's wait for it to fail. 
+
+Then, I'll tell you Complete. 
+
+Yeah, and a couple of monetary surely. 
+
+Oh, it's parting, And I, I denied its failure. 
+
+It shouldn't, as failure, you see, they come down failure, right? 
+
+Go up, go up. 
+
+I will see where it is failing. 
+
+Don't copy anything yet. 
+
+Yeah, It tries to check it, and he says that grab squid error error access denied. 
+
+Okay, so when it is, It is like denied. 
+
+Now, open one more validator. 
+
+Yeah, Yeah, Paste it. 
+
+Yeah, come down. 
+
+I'll give you a. 
+
+That's one yeah. 
+
+That's one, yeah. 
+
+And this needs to be Validated by Skynet. 
+
+Okay, doesn't need to be validating if you if you need to approves. 
+
+Okay, so that one the failed one and this one says squid error access denied. 
+
+Okay, so that one the failed one and this one says squid error access denied. 
+
+Is it that now? 
+
+Oh yeah, the cloud research manager, this one, Even though it is grapes could access denied. 
+
+If you see this below, that is like, not a blue color, but some other colors Cloud climax squid V2 custom test completed successfully, But lame. 
+
+You won't find that. 
+
+So, this is the line you should find whether it is working or not. 
+
+Okay, so that that thing is the thing that it says it is working. 
+
+You won't find that further, it failed this, right? 
+
+So, you should Carefully read whether it is allowed or not. 
+
+Yours thing is working or not. 
+
+So this, this is a shortcut that it is working. 
+
+Okay, you don't have to give one IP. 
+
+You can give test two or three IPS also at the same time. 
+
+Okay, that that is the way. 
+
+But, but that is the way that you should collect. 
+
+Okay, now you can open your PR and to apply this. 
+
+What should you do is, Um, search for quid In? 
+
+In another Jenkins console, you need this one to open. 
+
+Yeah, Um, squid. 
+
+In this type of Uh Street terraform V together Parameters. 
+
+Uh, search for squid again Because? 
+
+Uh, search for squid again. 
+
+This is my plan that plus Deploy. 
+
+Yeah, that one, the second one, deploy Yeah. 
+
+Now build parameters. 
+
+You can select share TCA and Virginia is the region, So that is the only reason that you are trying to apply right so you can select that region. 
+
+You have to select the region lc100 get up light. 
+
+So, what are the reasons that you want to apply, so share it be here and with genius. 
+
+So, those two are the things you have to select and then give a built once you merged. 
+
+Okay, then only it will be Allowed. 
+
+Got it. 
+
+Okay, Yes. 
+
+Okay, Yes, ma'am, if you have any doubt, just think me, I'll be able to help. 
+
+Yes, Yes, no problem. 
+
+Thank you. 
+
+Yeah, Thank you. 
+
