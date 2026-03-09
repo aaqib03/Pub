@@ -159,3 +159,20 @@ These are not in your current diagram but would further harden the architecture:
 ---
 
 This is a well-thought-out architecture. The main thing I'd recommend adding is **Cognito** for user authentication so the dashboard isn't accessible to just anyone who has the URL. Would you like me to expand on how to add that, or shall I produce this as a downloadable Word or PDF document?
+
+
+Great question. CloudFront gives you several key benefits for your use case:
+
+**Security** is the biggest one. CloudFront acts as a shield between the internet and your backend. All traffic hits CloudFront first, and you can attach AWS WAF to it to block SQL injection, XSS attacks, bad bots, and set rate limiting to prevent abuse. Your actual backend (ALB or API Gateway) never gets directly exposed.
+
+**Custom domain + HTTPS** is seamless. You attach your ACM certificate to CloudFront and point your domain at it — that's how you get `vulnerability.tech` working with proper SSL/TLS without managing certificates yourself.
+
+**DDoS protection** comes built-in for free via AWS Shield Standard, which is automatically applied to all CloudFront distributions.
+
+**Origin protection** is another big one. You configure CloudFront so that your ALB or VPC endpoint only accepts requests that come through CloudFront — meaning even if someone discovers your backend URL directly, they can't bypass CloudFront and hit it raw.
+
+**Caching** can speed up your dashboard significantly. Static assets like your HTML, JS, and CSS from S3 can be cached at CloudFront edge locations globally, so users get fast load times without hitting your backend every time.
+
+**Access control** integrates nicely — you can add Cognito authentication at the CloudFront layer so unauthenticated users get blocked before they even reach your Lambda or ALB.
+
+In short, for your architecture, CloudFront is essentially the secure front door to your entire application — everything sits safely behind it.
