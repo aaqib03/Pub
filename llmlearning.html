@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How LLMs Learn — Training Flowchart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --navy: #0D1B2A;
+    --blue: #1B3A6B;
+    --mid: #2E86C1;
+    --ice: #A8D5F5;
+    --white: #F0F6FF;
+    --accent: #00D4FF;
+    --green: #00E5A0;
+    --red: #FF4D6D;
+    --yellow: #FFD166;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, var(--accent), var(--ice));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ice);
+    opacity: 0.6;
+    margin-bottom: 40px;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── SENTENCE BANNER ── */
+  .sentence-banner {
+    background: linear-gradient(135deg, #1a2f50, #0f2040);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 14px;
+    padding: 18px 28px;
+    text-align: center;
+    margin: 0 auto 50px;
+    max-width: 640px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sentence-banner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.05), transparent);
+    animation: shimmer 3s infinite;
+  }
+  @keyframes shimmer { 0%,100%{transform:translateX(-100%)} 50%{transform:translateX(100%)} }
+  .sentence-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+  .sentence-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .sentence-text span {
+    color: var(--yellow);
+  }
+
+  /* ── EXAMPLES GRID ── */
+  .examples-section {
+    max-width: 780px;
+    margin: 0 auto 50px;
+  }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .example-card {
+    background: rgba(30,60,100,0.4);
+    border: 1px solid rgba(46,134,193,0.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeUp 0.4s forwards;
+  }
+  .example-card:nth-child(1){animation-delay:0.1s}
+  .example-card:nth-child(2){animation-delay:0.2s}
+  .example-card:nth-child(3){animation-delay:0.3s}
+  .example-card:nth-child(4){animation-delay:0.4s}
+  .example-card:nth-child(5){animation-delay:0.5s}
+  @keyframes fadeUp { to { opacity:1; transform:translateY(0) } }
+
+  .ex-input {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ice);
+    flex: 1;
+  }
+  .ex-arrow { color: var(--accent); font-size: 1rem; }
+  .ex-output {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(0,229,160,0.1);
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  /* ── MAIN FLOW ── */
+  .flow {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .step {
+    width: 100%;
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideIn 0.5s forwards;
+  }
+  .step:nth-child(1){animation-delay:0.6s}
+  .step:nth-child(2){animation-delay:0.8s}
+  .step:nth-child(3){animation-delay:1.0s}
+  .step:nth-child(4){animation-delay:1.2s}
+  .step:nth-child(5){animation-delay:1.4s}
+  @keyframes slideIn { to { opacity:1; transform:translateX(0) } }
+
+  .step-inner {
+    border-radius: 14px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Step colours */
+  .step-1 .step-inner { background: linear-gradient(135deg, #1a3a5c, #0f2540); border: 1.5px solid rgba(0,212,255,0.4); }
+  .step-2 .step-inner { background: linear-gradient(135deg, #1a3060, #0f1f45); border: 1.5px solid rgba(46,134,193,0.5); }
+  .step-3 .step-inner { background: linear-gradient(135deg, #2a1f50, #1a1035); border: 1.5px solid rgba(168,213,245,0.35); }
+  .step-4 .step-inner { background: linear-gradient(135deg, #3a1a25, #250f18); border: 1.5px solid rgba(255,77,109,0.4); }
+  .step-5 .step-inner { background: linear-gradient(135deg, #1a3a25, #0f2518); border: 1.5px solid rgba(0,229,160,0.4); }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .step-1 .step-num { background: var(--accent); color: var(--navy); }
+  .step-2 .step-num { background: var(--mid); color: white; }
+  .step-3 .step-num { background: #7B61FF; color: white; }
+  .step-4 .step-num { background: var(--red); color: white; }
+  .step-5 .step-num { background: var(--green); color: var(--navy); }
+
+  .step-title {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .step-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 2px;
+  }
+
+  /* Code block inside step */
+  .code-block {
+    background: rgba(0,0,0,0.35);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--ice);
+    overflow-x: auto;
+  }
+  .code-block .hi-accent { color: var(--accent); }
+  .code-block .hi-green  { color: var(--green); }
+  .code-block .hi-yellow { color: var(--yellow); }
+  .code-block .hi-red    { color: var(--red); }
+  .code-block .hi-mid    { color: #7EC8E3; }
+  .code-block .comment   { color: #4a7a9b; }
+
+  /* Bar chart for probabilities */
+  .prob-bars { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .prob-row { display: flex; align-items: center; gap: 10px; }
+  .prob-label { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; width: 60px; color: var(--ice); }
+  .prob-bar-wrap { flex: 1; background: rgba(255,255,255,0.07); border-radius: 4px; height: 18px; overflow: hidden; }
+  .prob-bar {
+    height: 100%; border-radius: 4px;
+    display: flex; align-items: center; padding-left: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 700;
+    transform: scaleX(0); transform-origin: left;
+    animation: growBar 0.8s ease forwards;
+  }
+  .prob-row:nth-child(1) .prob-bar { animation-delay: 1.1s; }
+  .prob-row:nth-child(2) .prob-bar { animation-delay: 1.2s; }
+  .prob-row:nth-child(3) .prob-bar { animation-delay: 1.3s; }
+  .prob-row:nth-child(4) .prob-bar { animation-delay: 1.4s; }
+  @keyframes growBar { to { transform: scaleX(1); } }
+
+  .bar-wrong  { background: linear-gradient(90deg, #FF4D6D, #ff7b92); width: 34%; color: white; }
+  .bar-close  { background: linear-gradient(90deg, #FFD166, #ffe599); width: 12%; color: #333; }
+  .bar-far    { background: linear-gradient(90deg, #4a5568, #6b7280); width: 8%; color: white; }
+  .bar-correct{ background: linear-gradient(90deg, #00E5A0, #00ffc3); width: 68%; color: #0D1B2A; }
+
+  /* Connector arrow */
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    gap: 2px;
+  }
+  .connector-line {
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(46,134,193,0.5), rgba(0,212,255,0.8));
+  }
+  .connector-arrow {
+    width: 0; height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 10px solid rgba(0,212,255,0.8);
+  }
+  .connector-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  /* Loss meter */
+  .loss-meter {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .loss-label-txt { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--ice); white-space: nowrap; }
+  .loss-track { flex: 1; height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+  .loss-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--yellow));
+    border-radius: 10px;
+    width: 0%;
+    animation: fillLoss 1s ease 1.5s forwards;
+  }
+  @keyframes fillLoss { to { width: 78%; } }
+  .loss-val { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 700; color: var(--red); }
+
+  /* Backprop arrows */
+  .backprop-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .bp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    animation: fadeUp 0.3s forwards;
+  }
+  .bp-row:nth-child(1){animation-delay:1.3s}
+  .bp-row:nth-child(2){animation-delay:1.45s}
+  .bp-row:nth-child(3){animation-delay:1.6s}
+  .bp-row:nth-child(4){animation-delay:1.75s}
+  .bp-arrow { color: var(--red); font-size: 0.8rem; }
+  .bp-layer { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--ice); }
+  .bp-blame { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--red); background: rgba(255,77,109,0.12); padding: 2px 8px; border-radius: 4px; }
+
+  /* Nudge viz */
+  .nudge-viz { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .nudge-row { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; }
+  .nudge-before { color: var(--red); }
+  .nudge-after  { color: var(--green); }
+  .nudge-sep { color: var(--accent); }
+
+  /* Loop banner */
+  .loop-banner {
+    max-width: 700px;
+    margin: 0 auto 40px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,229,160,0.08));
+    border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 14px;
+    padding: 20px 28px;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.5s 2s forwards;
+  }
+  .loop-title { font-size: 0.75rem; font-weight: 700; color: var(--green); letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; margin-bottom: 12px; }
+  .loop-stages { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .loop-stage { background: rgba(30,60,100,0.5); border: 1px solid rgba(46,134,193,0.3); border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; font-weight: 700; }
+  .loop-arr { color: var(--accent); font-size: 1.1rem; }
+
+  /* Summary line */
+  .summary {
+    max-width: 700px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #1B3A6B, #0f2040);
+    border: 1.5px solid rgba(0,212,255,0.4);
+    border-radius: 14px;
+    padding: 22px 28px;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.5s 2.3s forwards;
+  }
+  .summary-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--accent); letter-spacing: 0.15em; margin-bottom: 10px; }
+  .summary-text { font-size: 0.95rem; font-weight: 700; line-height: 1.6; color: var(--white); }
+  .summary-text em { color: var(--accent); font-style: normal; }
+</style>
+</head>
+<body>
+
+<h1>How an LLM Actually Learns</h1>
+<p class="subtitle">ONE TRAINING STEP — VISUALIZED</p>
+
+<!-- Sentence -->
+<div class="sentence-banner">
+  <div class="sentence-label">TRAINING SENTENCE</div>
+  <div class="sentence-text">"The cat sat on the <span>mat</span>"</div>
+</div>
+
+<!-- 5 auto-generated examples -->
+<div class="examples-section">
+  <div class="section-label">↓ 5 TRAINING EXAMPLES CREATED AUTOMATICALLY</div>
+  <div class="examples-grid">
+    <div class="example-card">
+      <span class="ex-input">"The"</span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-output">cat</span>
+    </div>
+    <div class="example-card">
+      <span class="ex-input">"The cat"</span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-output">sat</span>
+    </div>
+    <div class="example-card">
+      <span class="ex-input">"The cat sat"</span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-output">on</span>
+    </div>
+    <div class="example-card">
+      <span class="ex-input">"The cat sat on"</span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-output">the</span>
+    </div>
+    <div class="example-card">
+      <span class="ex-input">"The cat sat on the"</span>
+      <span class="ex-arrow">→</span>
+      <span class="ex-output">mat</span>
+    </div>
+  </div>
+</div>
+
+<!-- Main Flow -->
+<div class="flow">
+
+  <!-- Step 1: Forward Pass -->
+  <div class="step step-1">
+    <div class="step-inner">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title" style="color:#00D4FF">Forward Pass — The Attempt</div>
+          <div class="step-subtitle">Model tries to predict the next word</div>
+        </div>
+      </div>
+      <div class="code-block">
+        Input: <span class="hi-accent">"The cat sat on the"</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ tokenize → embed → attention → FFN<br>
+        Output probabilities:
+        <div class="prob-bars">
+          <div class="prob-row">
+            <span class="prob-label">"floor"</span>
+            <div class="prob-bar-wrap"><div class="prob-bar bar-wrong">34% ← model picks this</div></div>
+          </div>
+          <div class="prob-row">
+            <span class="prob-label">"dog"</span>
+            <div class="prob-bar-wrap"><div class="prob-bar bar-close">8%</div></div>
+          </div>
+          <div class="prob-row">
+            <span class="prob-label">"roof"</span>
+            <div class="prob-bar-wrap"><div class="prob-bar bar-far">6%</div></div>
+          </div>
+          <div class="prob-row">
+            <span class="prob-label" style="color:var(--green)">"mat" ✓</span>
+            <div class="prob-bar-wrap"><div class="prob-bar bar-correct" style="animation-delay:1.5s">12% — should be highest!</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-label">HOW WRONG?</div>
+  </div>
+
+  <!-- Step 2: Loss -->
+  <div class="step step-2">
+    <div class="step-inner">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title" style="color:#2E86C1">Calculate the Loss</div>
+          <div class="step-subtitle">Cross Entropy Loss — a single number for "how wrong"</div>
+        </div>
+      </div>
+      <div class="code-block">
+        Correct answer: <span class="hi-green">"mat"</span> → should be <span class="hi-green">100%</span><br>
+        Model predicted: <span class="hi-red">"mat"</span> → only <span class="hi-red">12%</span><br><br>
+        Loss = distance between prediction and truth
+      </div>
+      <div class="loss-meter">
+        <span class="loss-label-txt">Loss value:</span>
+        <div class="loss-track"><div class="loss-fill"></div></div>
+        <span class="loss-val">HIGH ↑</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-label">WHO'S RESPONSIBLE?</div>
+  </div>
+
+  <!-- Step 3: Backprop -->
+  <div class="step step-3">
+    <div class="step-inner">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title" style="color:#A8D5F5">Backpropagation — Blame Assignment</div>
+          <div class="step-subtitle">Work backwards through every layer</div>
+        </div>
+      </div>
+      <div class="backprop-layers">
+        <div class="bp-row">
+          <span class="bp-arrow">↑</span>
+          <span class="bp-layer">Output Layer</span>
+          <span class="bp-blame">gradient: −0.42</span>
+        </div>
+        <div class="bp-row">
+          <span class="bp-arrow">↑</span>
+          <span class="bp-layer">Transformer Block 12</span>
+          <span class="bp-blame">gradient: −0.31</span>
+        </div>
+        <div class="bp-row">
+          <span class="bp-arrow">↑</span>
+          <span class="bp-layer">Transformer Block 6</span>
+          <span class="bp-blame">gradient: −0.18</span>
+        </div>
+        <div class="bp-row">
+          <span class="bp-arrow">↑</span>
+          <span class="bp-layer">Embedding Layer</span>
+          <span class="bp-blame">gradient: −0.09</span>
+        </div>
+      </div>
+      <div class="code-block" style="margin-top:12px">
+        <span class="comment">// PyTorch does all of this in one line:</span><br>
+        <span class="hi-accent">loss</span>.<span class="hi-mid">backward()</span>  <span class="comment">← calculates all gradients</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-label">NOW FIX IT</div>
+  </div>
+
+  <!-- Step 4: Gradient Descent -->
+  <div class="step step-4">
+    <div class="step-inner">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title" style="color:#FF4D6D">Gradient Descent — Tiny Nudge</div>
+          <div class="step-subtitle">Every weight shifts slightly in the right direction</div>
+        </div>
+      </div>
+      <div class="nudge-viz">
+        <div class="nudge-row">
+          <span class="nudge-before">Before: [0.12, −0.45, 0.33, 0.67, ...]</span>
+        </div>
+        <div class="nudge-row">
+          <span class="nudge-sep">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ nudge by learning rate (0.0001)</span>
+        </div>
+        <div class="nudge-row">
+          <span class="nudge-after">After:&nbsp; [0.13, −0.43, 0.35, 0.68, ...]</span>
+        </div>
+      </div>
+      <div class="code-block" style="margin-top:12px">
+        <span class="hi-accent">optimizer</span>.<span class="hi-mid">step()</span>   <span class="comment">← apply the nudge</span><br>
+        <span class="hi-accent">optimizer</span>.<span class="hi-mid">zero_grad()</span> <span class="comment">← reset for next round</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">
+    <div class="connector-line"></div>
+    <div class="connector-arrow"></div>
+    <div class="connector-label">REPEAT BILLIONS OF TIMES</div>
+  </div>
+
+  <!-- Step 5: Result -->
+  <div class="step step-5">
+    <div class="step-inner">
+      <div class="step-header">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-title" style="color:#00E5A0">After Millions of Iterations</div>
+          <div class="step-subtitle">Loss drops → model gets smarter</div>
+        </div>
+      </div>
+      <div class="code-block">
+        Early training:&nbsp; "The cat sat on the ___" → <span class="hi-red">"dog"</span>  (random)<br>
+        Mid training:&nbsp;&nbsp; "The cat sat on the ___" → <span class="hi-yellow">"floor"</span> (warmer)<br>
+        Late training:&nbsp; "The cat sat on the ___" → <span class="hi-green">"mat"</span>  ✓ nailed it
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Loop -->
+<div style="height:40px"></div>
+<div class="loop-banner">
+  <div class="loop-title">THE TRAINING LOOP</div>
+  <div class="loop-stages">
+    <div class="loop-stage">📥 Forward Pass</div>
+    <span class="loop-arr">→</span>
+    <div class="loop-stage">📊 Loss</div>
+    <span class="loop-arr">→</span>
+    <div class="loop-stage">⬆️ Backprop</div>
+    <span class="loop-arr">→</span>
+    <div class="loop-stage">🔧 Nudge</div>
+    <span class="loop-arr">→</span>
+    <div class="loop-stage" style="border-color:rgba(0,212,255,0.5);color:var(--accent)">🔁 Repeat</div>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary">
+  <div class="summary-label">ONE-LINE SUMMARY</div>
+  <div class="summary-text">
+    Show model a sentence → it <em>guesses the next word</em> → measure how wrong →
+    <em>blame every weight</em> → nudge everything slightly →
+    repeat <em>billions of times</em> → loss shrinks → model learns language
+  </div>
+</div>
+
+<div style="height:40px"></div>
+</body>
+</html>
